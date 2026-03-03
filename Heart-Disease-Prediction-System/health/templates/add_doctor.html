@@ -1,80 +1,67 @@
 {% extends 'index.html' %}
 {% load static %}
 {% block body %}
-	<!-- register -->
+
 {% if error == "create" %}
-<script>
-    alert('Add a new Doctor Successfully');
-    window.location="{% url 'view_doctor' %}";
-</script>
+<script>window.location="{% url 'view_doctor' %}";</script>
 {% endif %}
 
+<style>
+  .ad-shell { max-width:640px; margin:56px auto; padding:0 20px 56px; }
+  .ad-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; overflow:hidden; box-shadow:0 2px 14px rgba(28,18,8,0.08); }
+  .ad-card-head { background:linear-gradient(135deg,#1c1208,#5c3d2e); padding:1.25rem 1.5rem; display:flex; align-items:center; gap:8px; }
+  .ad-card-head h3 { margin:0; color:#faf7f0; font-size:1.1rem; font-weight:600; }
+  .ad-card-body { padding:1.75rem; }
+  .ad-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+  @media(max-width:600px){ .ad-grid{grid-template-columns:1fr;} }
+  .ad-field { display:flex; flex-direction:column; gap:5px; }
+  .ad-field label { font-size:0.8rem; font-weight:600; color:#5c4a3a; }
+  .ad-field input { padding:9px 12px; border:1.5px solid #d9cbba; border-radius:8px; background:#faf7f0; color:#1c1208; font-size:0.9rem; outline:none; }
+  .ad-field input:focus { border-color:#5c3d2e; background:#fffdf9; box-shadow:0 0 0 3px rgba(92,61,46,0.1); }
+  .ad-field input[readonly] { background:#f0ebe0; color:#8a7060; }
+  .ad-full { grid-column:1/-1; }
+  .ad-sep { border:none; border-top:1px solid #e8ddd0; margin:1.5rem 0; }
+  .ad-actions { display:flex; gap:10px; flex-wrap:wrap; }
+  .ad-btn-primary { flex:1; padding:10px; border-radius:8px; background:linear-gradient(135deg,#3d2619,#5c3d2e); color:#faf7f0; font-size:0.9rem; font-weight:600; border:none; cursor:pointer; }
+  .ad-btn-primary:hover { opacity:0.88; }
+  .ad-btn-back { display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:8px;border:1.5px solid #e8ddd0;background:#fffdf9;color:#5c4a3a;font-size:0.875rem;text-decoration:none; }
+  .ad-btn-back:hover { background:#f5f0e4;border-color:#9e7c66;color:#3d2619;text-decoration:none; }
+</style>
 
-	<section class="logins py-5">
-		<div class="container py-xl-5 py-lg-3">
-			<div class="title-section mb-md-5 mb-4">
-				<h6 class="w3ls-title-sub"></h6><br><br>
-				<h3 class="w3ls-title text-uppercase text-dark font-weight-bold">Add Doctor</h3>
-			</div><hr/>
-			<div class="login px-sm-12" style="width:100%">
-				<form action="{% if doctor %}/change_doctor/{{doctor.id}}/{% else %}/add_doctor{% endif %}" method="post" enctype="multipart/form-data">
-					{% csrf_token %}
-					{% if not doctor %}
-					<div class="form-group row">
-						<div class="col-md-6">
-						<label>First Name</label>
-						<input type="text" class="form-control" name="first_name" placeholder="First Name" required="">
-						</div>
-						<div class="col-md-6">
-						<label>Last Name</label>
-						<input type="text" class="form-control" name="last_name" placeholder="Last Name" required="">
-						</div>
-					</div>
-					<div class="form-group row">
-						<div class="col-md-6">
-						<label>Username</label>
-						<input type="text" class="form-control" name="username" placeholder="Username" required="">
-						</div>
-						<div class="col-md-6">
-						<label>Password</label>
-						<input type="password" class="form-control" name="password" placeholder="Password" required="">
-						</div>
-					</div>
-					{% endif %}
-					<div class="form-group row">
-						<div class="col-md-6">
-						<label>Email</label>
-						<input type="email" class="form-control" name="email" placeholder="Enter Email" required="" value="{{doctor.user.email}}" {% if doctor %}readonly{% endif %}>
-						</div>
-						<div class="col-md-6">
-						<label>Contact</label>
-						<input type="text" class="form-control" name="contact" placeholder="Enter Contact" required="" value="{{doctor.contact}}">
-						</div>
-					</div>
-					<div class="form-group row">
-						<div class="col-md-6">
-						<label class="mb-2">Address</label>
-						<input type="text" class="form-control" name="address" id="password1" placeholder="Enter Address" required="" value="{{doctor.address}}">
-						</div>
-						<div class="col-md-6">
-						<label>Image</label>
-						<input type="file" class="form-control" name="image">
-						{% if doctor %}<span>{{doctor.image.url}}</span>{% endif %}
-						</div>
-
-					</div>
-					<div class="form-group row">
-						<div class="col-md-12">
-						<label>Specialist</label>
-							<input class="form-control" name="category" placeholder="Specialist" value="{{doctor.category}}">
-						</div>
-
-					</div>
-					<button type="submit" class="btn submit mt-4" style="background-color: #605d5d;">Register Doctor</button>
-				</form>
-			</div>
-		</div>
-	</section>
-	<!-- //register -->
+<div class="ad-shell">
+  <div class="ad-card">
+    <div class="ad-card-head">
+      <i class="fa fa-user-md" style="color:#e8c9a0;"></i>
+      <h3>{% if doctor %}Edit Doctor{% else %}Add New Doctor{% endif %}</h3>
+    </div>
+    <div class="ad-card-body">
+      <form action="{% if doctor %}/change_doctor/{{ doctor.id }}/{% else %}/add_doctor{% endif %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="ad-grid">
+          {% if not doctor %}
+          <div class="ad-field"><label>First Name</label><input type="text" name="first_name" placeholder="First Name" required></div>
+          <div class="ad-field"><label>Last Name</label><input type="text" name="last_name" placeholder="Last Name" required></div>
+          <div class="ad-field"><label>Username</label><input type="text" name="username" placeholder="Username" required></div>
+          <div class="ad-field"><label>Password</label><input type="password" name="password" placeholder="Password" required></div>
+          {% endif %}
+          <div class="ad-field"><label>Email</label><input type="email" name="email" value="{{ doctor.user.email }}" placeholder="Email" required {% if doctor %}readonly{% endif %}></div>
+          <div class="ad-field"><label>Contact</label><input type="text" name="contact" value="{{ doctor.contact }}" placeholder="Phone number" required></div>
+          <div class="ad-field"><label>Address / City</label><input type="text" name="address" value="{{ doctor.address }}" placeholder="City or address" required></div>
+          <div class="ad-field"><label>Specialist</label><input name="category" value="{{ doctor.category }}" placeholder="e.g. Cardiologist"></div>
+          <div class="ad-field ad-full">
+            <label>Profile Image{% if doctor %} (leave blank to keep current){% endif %}</label>
+            {% if doctor %}<small style="color:#b8a898;font-size:0.75rem;margin-bottom:4px;display:block;">Current: {{ doctor.image.url }}</small>{% endif %}
+            <input type="file" name="image">
+          </div>
+        </div>
+        <hr class="ad-sep">
+        <div class="ad-actions">
+          <a href="{% url 'view_doctor' %}" class="ad-btn-back"><i class="fa fa-arrow-left"></i> Back</a>
+          <button type="submit" class="ad-btn-primary"><i class="fa fa-save mr-1"></i> {% if doctor %}Save Changes{% else %}Register Doctor{% endif %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

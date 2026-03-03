@@ -2,82 +2,81 @@
 {% load static %}
 
 {% block body %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0"><i class="fas fa-heartbeat"></i> ECG Image Analysis</h3>
-                </div>
-                <div class="card-body">
-                    {% if error %}
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <strong>Error!</strong> {{ error }}
-                        <button type="button" class="close" data-dismiss="alert">
-                            <span>&times;</span>
-                        </button>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="alert alert-info">
-                        <h5><i class="fas fa-info-circle"></i> How it works:</h5>
-                        <ol>
-                            <li>Upload a clear 12-lead ECG image (paper ECG scan)</li>
-                            <li>Our AI will analyze the ECG waveforms</li>
-                            <li>Get instant diagnosis in 4 categories:
-                                <ul>
-                                    <li><strong>Normal</strong> - Healthy heart</li>
-                                    <li><strong>Myocardial Infarction</strong> - Heart attack</li>
-                                    <li><strong>Abnormal Heartbeat</strong> - Arrhythmia</li>
-                                    <li><strong>History of MI</strong> - Previous heart attack</li>
-                                </ul>
-                            </li>
-                        </ol>
-                    </div>
-                    
-                    <form method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        <div class="form-group">
-                            <label for="ecg_image"><strong>Upload ECG Image:</strong></label>
-                            <div class="custom-file">
-                                <input type="file" class="custom-file-input" id="ecg_image" name="ecg_image" 
-                                       accept="image/*" required onchange="previewImage(event)">
-                                <label class="custom-file-label" for="ecg_image">Choose ECG image...</label>
-                            </div>
-                            <small class="form-text text-muted">
-                                Supported formats: JPG, PNG, BMP. Max size: 10MB
-                            </small>
-                        </div>
-                        
-                        <div class="form-group" id="imagePreview" style="display:none;">
-                            <label><strong>Preview:</strong></label>
-                            <div class="text-center">
-                                <img id="preview" src="" alt="ECG Preview" class="img-fluid border rounded" style="max-height: 400px;">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary btn-lg btn-block">
-                                <i class="fas fa-upload"></i> Analyze ECG
-                            </button>
-                        </div>
-                    </form>
-                    
-                    <hr>
-                    
-                    <div class="text-center">
-                        <a href="{% url 'ecg_history' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-history"></i> View ECG History
-                        </a>
-                        <a href="{% url 'patient_home' %}" class="btn btn-outline-primary">
-                            <i class="fas fa-home"></i> Back to Dashboard
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+<style>
+  .ecg-upload-shell { max-width: 680px; margin: 48px auto; padding: 0 20px 48px; }
+  .ecg-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; box-shadow:0 4px 20px rgba(28,18,8,0.09); overflow:hidden; }
+  .ecg-card-header { background:linear-gradient(135deg,#1c1208 0%,#5c3d2e 100%); padding:1.25rem 1.75rem; display:flex; align-items:center; gap:0.75rem; }
+  .ecg-card-header h3 { margin:0; color:#faf7f0; font-size:1.15rem; font-weight:600; }
+  .ecg-card-body { padding:1.75rem; }
+  .ecg-info-box { background:#f5f0e4; border:1px solid #e8ddd0; border-left:4px solid #9e7c66; border-radius:8px; padding:1rem 1.25rem; margin-bottom:1.5rem; color:#5c4a3a; font-size:0.9rem; }
+  .ecg-info-box h5 { color:#3d2619; font-size:0.95rem; font-weight:600; margin-bottom:0.5rem; }
+  .ecg-info-box ol { margin:0; padding-left:1.25rem; }
+  .ecg-info-box li { margin-bottom:0.35rem; }
+  .ecg-error-box { background:#fdf0ee; border:1px solid #e8b4a8; border-left:4px solid #c0654f; border-radius:8px; padding:0.85rem 1.25rem; margin-bottom:1.25rem; color:#8b2e2e; font-size:0.9rem; }
+  .ecg-file-label { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.5rem; border:2px dashed #d9cbba; border-radius:10px; padding:2rem; background:#faf7f0; cursor:pointer; transition:border-color 0.2s, background 0.2s; text-align:center; }
+  .ecg-file-label:hover { border-color:#9e7c66; background:#f5f0e4; }
+  .ecg-file-label i { font-size:2rem; color:#9e7c66; }
+  .ecg-file-label span { color:#8a7060; font-size:0.9rem; }
+  .ecg-file-label strong { color:#3d2619; font-size:0.95rem; }
+  #ecg_image { display:none; }
+  .ecg-preview-box { border:1px solid #e8ddd0; border-radius:10px; background:#faf7f0; padding:1rem; text-align:center; margin-top:1rem; }
+  .ecg-submit-btn { width:100%; background:linear-gradient(135deg,#3d2619 0%,#5c3d2e 100%) !important; color:#faf7f0 !important; border:none; border-radius:8px; padding:0.85rem; font-weight:600; font-size:1rem; letter-spacing:0.02em; margin-top:1.25rem; transition:opacity 0.2s; }
+  .ecg-submit-btn:hover { opacity:0.9; }
+  .ecg-separator { border:none; border-top:1px solid #e8ddd0; margin:1.5rem 0; }
+  .ecg-actions { display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap; }
+  .ecg-btn-outline { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:8px; border:1px solid #e8ddd0; background:#fffdf9; color:#5c4a3a; font-size:0.85rem; font-weight:500; text-decoration:none; transition:background 0.15s, border-color 0.15s; }
+  .ecg-btn-outline:hover { background:#f5f0e4; border-color:#9e7c66; color:#3d2619; text-decoration:none; }
+</style>
+
+<div class="ecg-upload-shell">
+  <div class="ecg-card">
+    <div class="ecg-card-header">
+      <i class="fas fa-wave-square" style="color:#e8c9a0; font-size:1.3rem;"></i>
+      <h3>ECG Image Analysis</h3>
     </div>
+    <div class="ecg-card-body">
+
+      {% if error %}
+      <div class="ecg-error-box"><i class="fas fa-exclamation-circle mr-2"></i><strong>Error:</strong> {{ error }}</div>
+      {% endif %}
+
+      <div class="ecg-info-box">
+        <h5><i class="fas fa-info-circle mr-2"></i>How it works</h5>
+        <ol>
+          <li>Upload a clear 12-lead ECG image (paper ECG scan)</li>
+          <li>Our AI analyses the ECG waveforms automatically</li>
+          <li>Get instant diagnosis across 4 categories: <strong>Normal</strong>, <strong>Myocardial Infarction</strong>, <strong>Abnormal Heartbeat</strong>, <strong>History of MI</strong></li>
+        </ol>
+      </div>
+
+      <form method="POST" enctype="multipart/form-data" id="ecgForm">
+        {% csrf_token %}
+
+        <label for="ecg_image" class="ecg-file-label" id="dropLabel">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <strong>Click to choose ECG image</strong>
+          <span>JPG, PNG, BMP &nbsp;·&nbsp; Max 10 MB</span>
+        </label>
+        <input type="file" id="ecg_image" name="ecg_image" accept="image/*" required onchange="previewImage(event)">
+
+        <div class="ecg-preview-box" id="imagePreview" style="display:none;">
+          <img id="preview" src="" alt="ECG Preview" style="max-height:380px; border-radius:8px; max-width:100%;">
+        </div>
+
+        <button type="submit" class="btn ecg-submit-btn" id="submitBtn">
+          <i class="fas fa-microscope mr-2"></i>Analyse ECG
+        </button>
+      </form>
+
+      <hr class="ecg-separator">
+
+      <div class="ecg-actions">
+        <a href="{% url 'ecg_history' %}" class="ecg-btn-outline"><i class="fas fa-history"></i> ECG History</a>
+        <a href="{% url 'patient_home' %}" class="ecg-btn-outline"><i class="fas fa-home"></i> Dashboard</a>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <script>
@@ -90,10 +89,14 @@ function previewImage(event) {
             document.getElementById('imagePreview').style.display = 'block';
         }
         reader.readAsDataURL(file);
-        
-        // Update label
-        document.querySelector('.custom-file-label').textContent = file.name;
+        const label = document.getElementById('dropLabel');
+        label.innerHTML = '<i class="fas fa-check-circle" style="color:#4a6b4d;font-size:2rem;"></i><strong style="color:#4a6b4d;">' + file.name + '</strong><span style="color:#8a7060;">Click to change</span>';
     }
 }
+document.getElementById('ecgForm').addEventListener('submit', function() {
+    const btn = document.getElementById('submitBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Analysing...';
+    btn.disabled = true;
+});
 </script>
 {% endblock %}

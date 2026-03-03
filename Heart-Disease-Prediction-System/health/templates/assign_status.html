@@ -1,51 +1,59 @@
 {% extends 'index.html' %}
 {% load static %}
 {% block body %}
-<style>
-    fieldset{
-    color:black;
-    }
-</style>
-<div class="container" style="margin-top:5%;margin-bottom:5%">
-    <div class="row">
-        <div  class="col-md-12">
-                <h2 style="margin-top:5%;background:#262626;padding:19px;color:white">ASSIGN STATUS
-                </h2>
-<form id="loginForm" action="#" method="post" style="width:100%" enctype="multipart/form-data">
-    {% csrf_token %}
-    <fieldset id="body">
-        <div class="row">
-          <div class="col-md-12">
-                <fieldset>
-                    <label for="email" style="color:black;">Username</label><br>
-                    <input style="height:33px;width:100%" type="text" name="uname" id="email" value="{{prod.user.username}}" style="height:33px;" readonly>
-                </fieldset>
-          </div>
-          <div class="col-md-12">
-                <fieldset>
-                    <label for="email" style="color:black;">Status</label>
-                    <select name="stat" class="form-group" style="height:33px;width:100%">
-                        <option>----Select Status----</option>
-                        <option value="Accept">Accept</option>
-                        <option value="Reject">Reject</option>
-                    </select>
-                </fieldset>
-          </div>
-        </div>
-    <button class="btn btn-danger" type="submit">Assign Status</button>
-    </fieldset>
-    </form>
-    </div>
-
-</div>
-
-</div>
 
 {% if terror %}
-<script>
-    alert('Assigned Status successfully');
-    window.location = "{% url 'view_doctor' %}";
-</script>
+<script>window.location = "{% url 'view_doctor' %}";</script>
 {% endif %}
+
+<style>
+  .as-shell { max-width:440px; margin:56px auto; padding:0 20px 56px; }
+  .as-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; overflow:hidden; box-shadow:0 2px 14px rgba(28,18,8,0.08); }
+  .as-card-head { background:linear-gradient(135deg,#1c1208,#5c3d2e); padding:1.25rem 1.5rem; display:flex; align-items:center; gap:8px; }
+  .as-card-head h3 { margin:0; color:#faf7f0; font-size:1.1rem; font-weight:600; }
+  .as-card-body { padding:1.75rem; }
+  .as-field { margin-bottom:1.25rem; }
+  .as-field label { display:block; font-size:0.8rem; font-weight:600; color:#5c4a3a; margin-bottom:5px; }
+  .as-field input, .as-field select { width:100%; padding:9px 12px; border:1.5px solid #d9cbba; border-radius:8px; background:#faf7f0; color:#1c1208; font-size:0.9rem; outline:none; box-sizing:border-box; }
+  .as-field input[readonly] { background:#f0ebe0; color:#8a7060; }
+  .as-field select:focus { border-color:#5c3d2e; background:#fffdf9; box-shadow:0 0 0 3px rgba(92,61,46,0.1); }
+  .as-sep { border:none; border-top:1px solid #e8ddd0; margin:1.5rem 0; }
+  .as-actions { display:flex; gap:10px; }
+  .as-btn-primary { flex:1; padding:10px; border-radius:8px; background:linear-gradient(135deg,#3d2619,#5c3d2e); color:#faf7f0; font-size:0.9rem; font-weight:600; border:none; cursor:pointer; }
+  .as-btn-primary:hover { opacity:0.88; }
+  .as-btn-back { display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:8px;border:1.5px solid #e8ddd0;background:#fffdf9;color:#5c4a3a;font-size:0.875rem;text-decoration:none; }
+  .as-btn-back:hover { background:#f5f0e4;border-color:#9e7c66;color:#3d2619;text-decoration:none; }
+</style>
+
+<div class="as-shell">
+  <div class="as-card">
+    <div class="as-card-head">
+      <i class="fa fa-user-check" style="color:#e8c9a0;"></i>
+      <h3>Assign Doctor Status</h3>
+    </div>
+    <div class="as-card-body">
+      <form action="#" method="post">
+        {% csrf_token %}
+        <div class="as-field">
+          <label>Doctor Username</label>
+          <input type="text" name="uname" value="{{ prod.user.username }}" readonly>
+        </div>
+        <div class="as-field">
+          <label>Approval Status</label>
+          <select name="stat">
+            <option value="">— Select status —</option>
+            <option value="Accept">Approve</option>
+            <option value="Reject">Reject</option>
+          </select>
+        </div>
+        <hr class="as-sep">
+        <div class="as-actions">
+          <a href="{% url 'view_doctor' %}" class="as-btn-back"><i class="fa fa-arrow-left"></i> Back</a>
+          <button type="submit" class="as-btn-primary"><i class="fa fa-check mr-1"></i> Assign Status</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

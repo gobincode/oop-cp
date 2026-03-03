@@ -2,6 +2,99 @@
 {% load static %}
 
 {% block body %}
+<style>
+/* shadcn Input / Textarea */
+.shad-input, .shad-textarea {
+    width: 100%;
+    background: #faf7f0;
+    border: 1.5px solid #e8ddd0;
+    border-radius: 8px;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.92rem;
+    color: #1c1208;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+}
+.shad-input:focus, .shad-textarea:focus {
+    border-color: #5c3d2e;
+    box-shadow: 0 0 0 3px rgba(92,61,46,0.12);
+}
+.shad-textarea { resize: vertical; min-height: 110px; }
+.shad-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #3d2619;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+}
+.shad-hint { font-size: 0.8rem; color: #b8a898; margin-top: 4px; }
+
+/* shadcn Avatar */
+.shad-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #f0ebe0;
+    border: 2px solid #e8ddd0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: #9e7c66;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.shad-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Cream error alert */
+.shad-alert-error {
+    background: #fdf0ee;
+    border: 1px solid #e8b4a8;
+    border-left: 4px solid #c0654f;
+    border-radius: 8px;
+    padding: 0.85rem 1.1rem;
+    color: #8b2e2e;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+.shad-alert-error button {
+    background: none;
+    border: none;
+    color: #c0654f;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+/* Buttons */
+.shad-btn-primary {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 24px; border-radius: 8px;
+    background: linear-gradient(135deg, #3d2619 0%, #5c3d2e 100%);
+    color: #faf7f0; font-size: 0.9rem; font-weight: 600;
+    border: none; cursor: pointer; text-decoration: none;
+    transition: opacity 0.2s;
+}
+.shad-btn-primary:hover { opacity: 0.88; color: #faf7f0; text-decoration: none; }
+.shad-btn-outline {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 24px; border-radius: 8px;
+    border: 1.5px solid #e8ddd0; background: #fffdf9;
+    color: #5c4a3a; font-size: 0.9rem; font-weight: 500;
+    text-decoration: none; transition: background 0.15s, border-color 0.15s;
+}
+.shad-btn-outline:hover { background: #f5f0e4; border-color: #9e7c66; color: #3d2619; text-decoration: none; }
+
+/* Icon color override */
+.icon-espresso { color: #9e7c66 !important; }
+</style>
+
 <div class="page-shell">
     <div class="container">
         <section class="section-intro text-center mb-5 fade-in">
@@ -18,10 +111,10 @@
             <h4 class="mb-2">Appointment Request Sent</h4>
             <p class="text-muted mb-4">{{ success }}</p>
             <div class="booking-actions">
-                <a href="{% url 'my_appointments' %}" class="btn btn-primary">
+                <a href="{% url 'my_appointments' %}" class="shad-btn-primary">
                     <i class="fas fa-calendar"></i> View My Appointments
                 </a>
-                <a href="{% url 'find_doctors' %}" class="btn btn-outline-secondary">
+                <a href="{% url 'find_doctors' %}" class="shad-btn-outline">
                     <i class="fas fa-search"></i> Find Other Doctors
                 </a>
             </div>
@@ -29,30 +122,28 @@
         {% else %}
 
         {% if error %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong><i class="fas fa-exclamation-circle"></i> Error:</strong> {{ error }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+        <div class="shad-alert-error" id="bookingError">
+            <span><i class="fas fa-exclamation-circle mr-2"></i><strong>Error:</strong> {{ error }}</span>
+            <button onclick="document.getElementById('bookingError').style.display='none'" title="Dismiss">&times;</button>
         </div>
         {% endif %}
 
         <div class="booking-form-card fade-in">
             <div class="doctor-highlight mb-4">
-                {% if doctor.image %}
-                <img src="{{ doctor.image.url }}" alt="Doctor portrait">
-                {% else %}
-                <div class="doctor-avatar">
+                <div class="shad-avatar">
+                    {% if doctor.image %}
+                    <img src="{{ doctor.image.url }}" alt="Doctor portrait">
+                    {% else %}
                     <i class="fas fa-user-md"></i>
+                    {% endif %}
                 </div>
-                {% endif %}
                 <div>
                     <h4 class="mb-2">Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</h4>
                     <ul class="mb-0">
-                        <li><i class="fas fa-stethoscope text-primary"></i> {{ doctor.specialization|default:"Cardiologist" }}</li>
-                        <li><i class="fas fa-hospital text-primary"></i> {{ doctor.hospital_name|default:"Private Practice" }}</li>
-                        <li><i class="fas fa-map-marker-alt text-primary"></i> {{ doctor.address }}</li>
-                        <li><i class="fas fa-phone text-primary"></i> {{ doctor.contact }}</li>
+                        <li><i class="fas fa-stethoscope icon-espresso"></i> {{ doctor.specialization|default:"Cardiologist" }}</li>
+                        <li><i class="fas fa-hospital icon-espresso"></i> {{ doctor.hospital_name|default:"Private Practice" }}</li>
+                        <li><i class="fas fa-map-marker-alt icon-espresso"></i> {{ doctor.address }}</li>
+                        <li><i class="fas fa-phone icon-espresso"></i> {{ doctor.contact }}</li>
                     </ul>
                 </div>
             </div>
@@ -62,23 +153,23 @@
 
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label for="appointment_date">Appointment Date</label>
-                        <input type="date" class="form-control" id="appointment_date" name="appointment_date"
+                        <label class="shad-label" for="appointment_date">Appointment Date</label>
+                        <input type="date" class="shad-input" id="appointment_date" name="appointment_date"
                                min="{{ today }}" required>
-                        <small class="text-muted">Pick a date that works best for you.</small>
+                        <p class="shad-hint">Pick a date that works best for you.</p>
                     </div>
                     <div class="form-group col-md-6">
-                        <label for="appointment_time">Preferred Time</label>
-                        <input type="time" class="form-control" id="appointment_time" name="appointment_time" required>
-                        <small class="text-muted">Let us know your ideal time slot.</small>
+                        <label class="shad-label" for="appointment_time">Preferred Time</label>
+                        <input type="time" class="shad-input" id="appointment_time" name="appointment_time" required>
+                        <p class="shad-hint">Let us know your ideal time slot.</p>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="reason">Reason for Visit</label>
-                    <textarea class="form-control" id="reason" name="reason" rows="4"
+                    <label class="shad-label" for="reason">Reason for Visit</label>
+                    <textarea class="shad-textarea" id="reason" name="reason" rows="4"
                               placeholder="Describe your symptoms or goal for this consultation..."></textarea>
-                    <small class="text-muted">Optional but helpful for your specialist.</small>
+                    <p class="shad-hint">Optional but helpful for your specialist.</p>
                 </div>
 
                 <div class="booking-note d-flex align-items-start mt-4">
@@ -90,10 +181,10 @@
                 </div>
 
                 <div class="booking-actions mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg">
+                    <button type="submit" class="shad-btn-primary">
                         <i class="fas fa-calendar-check"></i> Submit Request
                     </button>
-                    <a href="{% url 'find_doctors' %}" class="btn btn-outline-secondary btn-lg">
+                    <a href="{% url 'find_doctors' %}" class="shad-btn-outline">
                         <i class="fas fa-arrow-left"></i> Browse Other Doctors
                     </a>
                 </div>
@@ -102,10 +193,10 @@
         {% endif %}
 
         <div class="card-actions justify-content-center mt-5">
-            <a href="{% url 'patient_home' %}" class="btn btn-outline-primary">
+            <a href="{% url 'patient_home' %}" class="shad-btn-outline">
                 <i class="fas fa-home"></i> Back to Dashboard
             </a>
-            <a href="{% url 'my_appointments' %}" class="btn btn-primary">
+            <a href="{% url 'my_appointments' %}" class="shad-btn-primary">
                 <i class="fas fa-calendar"></i> My Appointments
             </a>
         </div>

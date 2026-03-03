@@ -2,126 +2,170 @@
 {% load static %}
 
 {% block body %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow">
-                <div class="card-header {% if ecg_record.prediction_code == 2 %}bg-success{% elif ecg_record.prediction_code == 1 %}bg-danger{% else %}bg-warning{% endif %} text-white">
-                    <h3 class="mb-0"><i class="fas fa-file-medical"></i> ECG Analysis Result</h3>
-                </div>
-                <div class="card-body">
-                    
-                    <!-- Result Summary -->
-                    <div class="alert {% if ecg_record.prediction_code == 2 %}alert-success{% elif ecg_record.prediction_code == 1 %}alert-danger{% else %}alert-warning{% endif %} text-center">
-                        <h4><i class="fas fa-heartbeat"></i> {{ ecg_record.prediction_label }}</h4>
-                        <p class="mb-0">{{ ecg_record.prediction_message }}</p>
-                        {% if ecg_record.confidence %}
-                        <small>Confidence: {{ ecg_record.confidence|floatformat:2 }}%</small>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="row">
-                        <!-- ECG Image -->
-                        <div class="col-md-6">
-                            <h5>Uploaded ECG Image:</h5>
-                            <div class="border rounded p-2 bg-light">
-                                <img src="{{ ecg_record.ecg_image.url }}" alt="ECG Image" class="img-fluid">
-                            </div>
-                            <small class="text-muted">Uploaded: {{ ecg_record.created|date:"M d, Y H:i" }}</small>
-                        </div>
-                        
-                        <!-- Interpretation -->
-                        <div class="col-md-6">
-                            <h5>What does this mean?</h5>
-                            
-                            {% if ecg_record.prediction_code == 2 %}
-                            <div class="alert alert-success">
-                                <h6><i class="fas fa-check-circle"></i> Normal ECG</h6>
-                                <p>Your ECG shows normal heart rhythm and electrical activity. This is a good sign!</p>
-                                <ul>
-                                    <li>Regular heart rhythm</li>
-                                    <li>Normal P, QRS, and T waves</li>
-                                    <li>No signs of heart disease</li>
-                                </ul>
-                            </div>
-                            {% elif ecg_record.prediction_code == 1 %}
-                            <div class="alert alert-danger">
-                                <h6><i class="fas fa-exclamation-triangle"></i> Myocardial Infarction Detected</h6>
-                                <p><strong>This is a medical emergency!</strong></p>
-                                <ul>
-                                    <li>Seek immediate medical attention</li>
-                                    <li>Call emergency services (911)</li>
-                                    <li>Do not drive yourself to hospital</li>
-                                    <li>Take aspirin if available and not allergic</li>
-                                </ul>
-                            </div>
-                            {% elif ecg_record.prediction_code == 0 %}
-                            <div class="alert alert-warning">
-                                <h6><i class="fas fa-heartbeat"></i> Abnormal Heartbeat</h6>
-                                <p>Your ECG shows irregular heart rhythm (arrhythmia).</p>
-                                <ul>
-                                    <li>Consult a cardiologist soon</li>
-                                    <li>May require medication or treatment</li>
-                                    <li>Monitor symptoms (palpitations, dizziness)</li>
-                                    <li>Avoid excessive caffeine and stress</li>
-                                </ul>
-                            </div>
-                            {% elif ecg_record.prediction_code == 3 %}
-                            <div class="alert alert-warning">
-                                <h6><i class="fas fa-history"></i> History of Myocardial Infarction</h6>
-                                <p>Your ECG shows signs of a previous heart attack.</p>
-                                <ul>
-                                    <li>Follow up with your cardiologist</li>
-                                    <li>Continue prescribed medications</li>
-                                    <li>Maintain heart-healthy lifestyle</li>
-                                    <li>Regular monitoring recommended</li>
-                                </ul>
-                            </div>
-                            {% endif %}
-                            
-                            <div class="alert alert-info">
-                                <strong><i class="fas fa-info-circle"></i> Important Note:</strong>
-                                <p class="mb-0">This is an AI-assisted analysis and should not replace professional medical advice. Always consult with a qualified healthcare provider for proper diagnosis and treatment.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Nearby Doctors -->
-                    {% if doctors %}
-                    <hr>
-                    <h5><i class="fas fa-user-md"></i> Recommended Doctors in Your Area:</h5>
-                    <div class="row">
-                        {% for doctor in doctors %}
-                        <div class="col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h6>Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</h6>
-                                    <p class="mb-1"><i class="fas fa-stethoscope"></i> {{ doctor.category }}</p>
-                                    <p class="mb-1"><i class="fas fa-phone"></i> {{ doctor.contact }}</p>
-                                    <p class="mb-0"><i class="fas fa-map-marker-alt"></i> {{ doctor.address }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    
-                    <hr>
-                    
-                    <div class="text-center">
-                        <a href="{% url 'upload_ecg' %}" class="btn btn-primary">
-                            <i class="fas fa-upload"></i> Analyze Another ECG
-                        </a>
-                        <a href="{% url 'ecg_history' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-history"></i> View History
-                        </a>
-                        <a href="{% url 'patient_home' %}" class="btn btn-outline-primary">
-                            <i class="fas fa-home"></i> Back to Dashboard
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+<style>
+  .result-shell { max-width: 960px; margin: 48px auto; padding: 0 20px 48px; }
+  .result-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; box-shadow:0 4px 20px rgba(28,18,8,0.09); overflow:hidden; }
+  .result-card-header { padding:1.25rem 1.75rem; display:flex; align-items:center; gap:0.75rem; }
+  .result-card-header h3 { margin:0; color:#faf7f0; font-size:1.15rem; font-weight:600; }
+  .header-normal  { background:linear-gradient(135deg,#2e5e35 0%,#4a6b4d 100%); }
+  .header-danger  { background:linear-gradient(135deg,#8b2e2e 0%,#c0654f 100%); }
+  .header-warning { background:linear-gradient(135deg,#5c3d2e 0%,#7a5a46 100%); }
+  .result-card-body { padding:1.75rem; }
+
+  /* Result banner */
+  .result-banner { border-radius:10px; padding:1.25rem 1.5rem; margin-bottom:1.5rem; text-align:center; }
+  .banner-normal  { background:#e8f5e9; border:1px solid #b8d4ba; color:#2e5e35; }
+  .banner-danger  { background:#fdf0ee; border:1px solid #e8b4a8; color:#8b2e2e; }
+  .banner-warning { background:#fef8ec; border:1px solid #e8d9a0; color:#7a5a1a; }
+  .result-banner h4 { margin:0 0 0.4rem; font-size:1.15rem; font-weight:700; }
+
+  /* Confidence bar */
+  .confidence-wrap { margin-top:0.75rem; }
+  .confidence-label { font-size:0.8rem; font-weight:600; margin-bottom:4px; }
+  .confidence-track { background:rgba(28,18,8,0.1); border-radius:99px; height:8px; overflow:hidden; }
+  .confidence-fill  { height:100%; border-radius:99px; transition:width 1s ease; }
+  .fill-normal  { background:#4a6b4d; }
+  .fill-danger  { background:#c0654f; }
+  .fill-warning { background:#c4a44a; }
+
+  /* Section titles */
+  .result-section-title { font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#8a7060; margin:0 0 0.75rem; }
+
+  /* Image box */
+  .ecg-image-box { border:1px solid #e8ddd0; border-radius:10px; background:#faf7f0; padding:0.75rem; text-align:center; }
+  .ecg-image-box img { border-radius:6px; max-width:100%; }
+
+  /* Interpretation box */
+  .interp-box { border-radius:10px; padding:1.1rem 1.25rem; font-size:0.9rem; }
+  .interp-normal  { background:#e8f5e9; border:1px solid #b8d4ba; color:#2e5e35; }
+  .interp-danger  { background:#fdf0ee; border:1px solid #e8b4a8; color:#8b2e2e; }
+  .interp-warning { background:#fef8ec; border:1px solid #e8d9a0; color:#7a5a1a; }
+  .interp-box h6 { font-weight:700; margin-bottom:0.5rem; }
+  .interp-box ul { margin:0.5rem 0 0; padding-left:1.25rem; }
+  .interp-box li { margin-bottom:0.3rem; }
+
+  /* Disclaimer */
+  .disclaimer-box { background:#f5f0e4; border:1px solid #e8ddd0; border-left:4px solid #9e7c66; border-radius:8px; padding:0.9rem 1.1rem; font-size:0.85rem; color:#5c4a3a; margin-top:1rem; }
+
+  /* Separator */
+  .result-sep { border:none; border-top:1px solid #e8ddd0; margin:1.5rem 0; }
+
+  /* Doctor cards */
+  .doctor-mini-card { background:#faf7f0; border:1px solid #e8ddd0; border-radius:10px; padding:1rem 1.1rem; }
+  .doctor-mini-card h6 { color:#1c1208; font-weight:700; margin:0 0 0.4rem; }
+  .doctor-mini-card p { color:#5c4a3a; font-size:0.85rem; margin:0.2rem 0; }
+
+  /* Action buttons */
+  .result-actions { display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap; }
+  .res-btn-primary { display:inline-flex; align-items:center; gap:6px; padding:9px 20px; border-radius:8px; background:linear-gradient(135deg,#3d2619 0%,#5c3d2e 100%); color:#faf7f0; font-size:0.875rem; font-weight:600; text-decoration:none; border:none; transition:opacity 0.2s; }
+  .res-btn-primary:hover { opacity:0.88; color:#faf7f0; text-decoration:none; }
+  .res-btn-outline { display:inline-flex; align-items:center; gap:6px; padding:9px 20px; border-radius:8px; border:1px solid #e8ddd0; background:#fffdf9; color:#5c4a3a; font-size:0.875rem; font-weight:500; text-decoration:none; transition:background 0.15s, border-color 0.15s; }
+  .res-btn-outline:hover { background:#f5f0e4; border-color:#9e7c66; color:#3d2619; text-decoration:none; }
+</style>
+
+<div class="result-shell">
+  <div class="result-card">
+
+    <!-- Card Header -->
+    <div class="result-card-header {% if ecg_record.prediction_code == 2 %}header-normal{% elif ecg_record.prediction_code == 1 %}header-danger{% else %}header-warning{% endif %}">
+      <i class="fas fa-file-medical" style="color:rgba(255,255,255,0.85); font-size:1.3rem;"></i>
+      <h3>ECG Analysis Result</h3>
     </div>
+
+    <div class="result-card-body">
+
+      <!-- Result Banner -->
+      <div class="result-banner {% if ecg_record.prediction_code == 2 %}banner-normal{% elif ecg_record.prediction_code == 1 %}banner-danger{% else %}banner-warning{% endif %}">
+        <h4><i class="fas fa-heartbeat mr-2"></i>{{ ecg_record.prediction_label }}</h4>
+        <p style="margin:0 0 0.5rem; font-size:0.92rem;">{{ ecg_record.prediction_message }}</p>
+        {% if ecg_record.confidence %}
+        <div class="confidence-wrap">
+          <div class="confidence-label">Model Confidence: {{ ecg_record.confidence|floatformat:1 }}%</div>
+          <div class="confidence-track">
+            <div class="confidence-fill {% if ecg_record.prediction_code == 2 %}fill-normal{% elif ecg_record.prediction_code == 1 %}fill-danger{% else %}fill-warning{% endif %}"
+                 style="width: {{ ecg_record.confidence|floatformat:0 }}%;"></div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Two columns: image + interpretation -->
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <p class="result-section-title"><i class="fas fa-image mr-1"></i>Uploaded ECG</p>
+          <div class="ecg-image-box">
+            <img src="{{ ecg_record.ecg_image.url }}" alt="ECG Image">
+          </div>
+          <small style="color:#b8a898; display:block; margin-top:0.5rem;">
+            <i class="fas fa-clock mr-1"></i>{{ ecg_record.created|date:"M d, Y · H:i" }}
+          </small>
+        </div>
+
+        <div class="col-md-6 mb-4">
+          <p class="result-section-title"><i class="fas fa-stethoscope mr-1"></i>Interpretation</p>
+
+          {% if ecg_record.prediction_code == 2 %}
+          <div class="interp-box interp-normal">
+            <h6><i class="fas fa-check-circle mr-2"></i>Normal ECG</h6>
+            <p style="margin:0 0 0.4rem;">Your ECG shows normal heart rhythm and electrical activity.</p>
+            <ul><li>Regular heart rhythm</li><li>Normal P, QRS, and T waves</li><li>No signs of heart disease</li></ul>
+          </div>
+          {% elif ecg_record.prediction_code == 1 %}
+          <div class="interp-box interp-danger">
+            <h6><i class="fas fa-exclamation-triangle mr-2"></i>Myocardial Infarction Detected</h6>
+            <p style="margin:0 0 0.4rem;"><strong>This may be a medical emergency.</strong></p>
+            <ul><li>Seek immediate medical attention</li><li>Call emergency services</li><li>Do not drive yourself to hospital</li><li>Take aspirin if available and not allergic</li></ul>
+          </div>
+          {% elif ecg_record.prediction_code == 0 %}
+          <div class="interp-box interp-warning">
+            <h6><i class="fas fa-heartbeat mr-2"></i>Abnormal Heartbeat</h6>
+            <p style="margin:0 0 0.4rem;">Your ECG shows irregular heart rhythm (arrhythmia).</p>
+            <ul><li>Consult a cardiologist soon</li><li>May require medication or treatment</li><li>Monitor symptoms (palpitations, dizziness)</li></ul>
+          </div>
+          {% elif ecg_record.prediction_code == 3 %}
+          <div class="interp-box interp-warning">
+            <h6><i class="fas fa-history mr-2"></i>History of Myocardial Infarction</h6>
+            <p style="margin:0 0 0.4rem;">Your ECG shows signs of a previous heart attack.</p>
+            <ul><li>Follow up with your cardiologist</li><li>Continue prescribed medications</li><li>Maintain a heart-healthy lifestyle</li></ul>
+          </div>
+          {% endif %}
+
+          <div class="disclaimer-box mt-3">
+            <i class="fas fa-info-circle mr-2"></i><strong>Important:</strong> This is an AI-assisted analysis. Always consult a qualified healthcare provider for diagnosis and treatment.
+          </div>
+        </div>
+      </div>
+
+      <!-- Nearby Doctors -->
+      {% if doctors %}
+      <hr class="result-sep">
+      <p class="result-section-title"><i class="fas fa-user-md mr-1"></i>Recommended Doctors</p>
+      <div class="row">
+        {% for doctor in doctors %}
+        <div class="col-md-6 mb-3">
+          <div class="doctor-mini-card" style="display:flex;flex-direction:column;gap:0.4rem;">
+            <h6>Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</h6>
+            <p><i class="fas fa-stethoscope mr-1" style="color:#9e7c66;"></i>{{ doctor.category }}</p>
+            <p><i class="fas fa-phone mr-1" style="color:#9e7c66;"></i>{{ doctor.contact }}</p>
+            <p><i class="fas fa-map-marker-alt mr-1" style="color:#9e7c66;"></i>{{ doctor.address }}</p>
+            <a href="{% url 'book_appointment' doctor.id %}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:7px;background:linear-gradient(135deg,#3d2619,#5c3d2e);color:#faf7f0;font-size:0.8rem;font-weight:600;text-decoration:none;margin-top:0.5rem;width:fit-content;">
+              <i class="fas fa-calendar-plus"></i> Book Appointment
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <hr class="result-sep">
+
+      <div class="result-actions">
+        <a href="{% url 'upload_ecg' %}" class="res-btn-primary"><i class="fas fa-upload"></i> Analyse Another ECG</a>
+        <a href="{% url 'ecg_history' %}" class="res-btn-outline"><i class="fas fa-history"></i> View History</a>
+        <a href="{% url 'patient_home' %}" class="res-btn-outline"><i class="fas fa-home"></i> Dashboard</a>
+      </div>
+
+    </div>
+  </div>
 </div>
 {% endblock %}

@@ -1,9 +1,202 @@
 {% extends 'index.html' %}
 {% load static %}
 {% block body %}
-<div class="container-fluid" style="margin-top:10%;margin-bottom:2%;width:100%">
-    <h2 align="center" style="font-weight:bold;font-family:roman">DOCTOR DASHBORAD</h2><hr/>
-    <img src="{% static 'images/health.jpeg' %}" style="width:100%;height:500px">
+<style>
+  .doc-shell { max-width:1100px; margin:48px auto; padding:0 24px 48px; }
+  .doc-header { margin-bottom:28px; }
+  .doc-header h1 { font-size:1.6rem; font-weight:700; color:#1c1208; margin:0 0 4px; }
+  .doc-header p { color:#8a7060; font-size:0.9rem; margin:0; }
+  .doc-sep { border:none; border-top:1px solid #e8ddd0; margin:0 0 28px; }
+
+  .doc-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px; }
+  @media(max-width:600px){ .doc-stats{grid-template-columns:1fr;} }
+  .doc-stat-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:12px; padding:20px; text-align:center; }
+  .doc-stat-card .num { font-size:2rem; font-weight:800; color:#1c1208; line-height:1; }
+  .doc-stat-card .lbl { font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; color:#8a7060; margin-top:4px; }
+
+  .doc-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media(max-width:768px){ .doc-grid{grid-template-columns:1fr;} }
+  .doc-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:12px; padding:20px; }
+  .doc-card-title { font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#8a7060; margin:0 0 14px; display:flex; align-items:center; gap:6px; }
+
+  .appt-row-item { padding:10px 0; border-bottom:1px solid #f0ebe0; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .appt-row-item:last-child { border-bottom:none; }
+  .appt-name { font-size:0.875rem; font-weight:600; color:#1c1208; }
+  .appt-meta { font-size:0.78rem; color:#8a7060; }
+  .status-pill { padding:3px 10px; border-radius:99px; font-size:0.72rem; font-weight:600; }
+  .pill-pending   { background:#fef8ec; color:#7a5a1a; border:1px solid #e8d9a0; }
+  .pill-confirmed { background:#eaf0ea; color:#4a6b4d; border:1px solid #b8d4ba; }
+  .pill-completed { background:#f0ebe0; color:#5c3d2e; border:1px solid #d9cbba; }
+  .pill-cancelled { background:#fdf0ee; color:#8b2e2e; border:1px solid #e8b4a8; }
+
+  .patient-row { padding:10px 0; border-bottom:1px solid #f0ebe0; display:flex; align-items:center; justify-content:space-between; }
+  .patient-row:last-child { border-bottom:none; }
+  .result-pill-h { padding:3px 10px; border-radius:99px; font-size:0.72rem; font-weight:600; background:#eaf0ea; color:#4a6b4d; border:1px solid #b8d4ba; }
+  .result-pill-u { padding:3px 10px; border-radius:99px; font-size:0.72rem; font-weight:600; background:#fdf0ee; color:#8b2e2e; border:1px solid #e8b4a8; }
+
+  .doc-quick-actions { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:28px; }
+  .dqa-btn { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border-radius:8px; font-size:0.85rem; font-weight:500; text-decoration:none; border:1.5px solid #e8ddd0; background:#fffdf9; color:#5c4a3a; transition:background 0.15s; }
+  .dqa-btn:hover { background:#f5f0e4; border-color:#9e7c66; color:#3d2619; text-decoration:none; }
+  .dqa-btn-primary { background:linear-gradient(135deg,#3d2619,#5c3d2e); color:#faf7f0 !important; border-color:transparent; }
+  .dqa-btn-primary:hover { opacity:0.88; background:linear-gradient(135deg,#3d2619,#5c3d2e); }
+
+  .empty-note { text-align:center; color:#b8a898; padding:1.5rem 0; font-size:0.875rem; }
+
+  /* AI Summary modal */
+  .ai-modal-backdrop {
+    display:none; position:fixed; inset:0; background:rgba(28,18,8,0.45);
+    z-index:1000; align-items:center; justify-content:center;
+  }
+  .ai-modal-backdrop.open { display:flex; }
+  .ai-modal {
+    background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px;
+    max-width:560px; width:90%; padding:24px 28px 28px; position:relative;
+    box-shadow:0 8px 32px rgba(28,18,8,0.18);
+  }
+  .ai-modal-close {
+    position:absolute; top:14px; right:16px;
+    background:none; border:none; font-size:1rem; color:#8a7060; cursor:pointer; padding:4px;
+    border-radius:6px; transition:background 0.12s;
+  }
+  .ai-modal-close:hover { background:#f0ebe0; color:#3d2619; }
+  .ai-modal-body {
+    font-size:0.875rem; color:#3d2619; line-height:1.75;
+    min-height:60px; white-space:pre-wrap;
+    background:#f5f0e8; border:1px solid #e8ddd0; border-radius:8px;
+    padding:14px 16px; margin-top:12px;
+  }
+  .ai-spin { display:inline-block; width:16px; height:16px; border:2px solid #e8ddd0; border-top-color:#5c3d2e; border-radius:50%; animation:ai-spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
+  @keyframes ai-spin{ to{transform:rotate(360deg);} }
+  .sum-btn {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:4px 11px; border-radius:7px; font-size:0.75rem; font-weight:600;
+    background:#f0ebe0; border:1.5px solid #d4c4b0; color:#5c3d2e;
+    cursor:pointer; transition:background 0.12s; white-space:nowrap;
+  }
+  .sum-btn:hover { background:#e8ddd0; border-color:#b8a898; }
+</style>
+
+<!-- AI Summary Modal (shadcn Alert-Dialog style) -->
+<div class="ai-modal-backdrop" id="summaryModal">
+  <div class="ai-modal shad-card">
+    <button class="ai-modal-close" onclick="closeSummaryModal()"><i class="fa fa-times"></i></button>
+    <p class="shad-card-header" style="margin:0 0 2px;display:flex;align-items:center;gap:8px;">
+      <i class="fa fa-robot" style="color:#5c3d2e;"></i> AI Patient Summary
+    </p>
+    <p style="font-size:0.78rem;color:#8a7060;margin:0;" id="summaryPatientName"></p>
+    <div class="ai-modal-body" id="summaryBody"><span class="ai-spin"></span> Generating summary...</div>
+  </div>
 </div>
 
+<div class="doc-shell">
+
+  <div class="doc-header">
+    <h1><i class="fa fa-user-md mr-2" style="color:#5c3d2e;"></i>Doctor Dashboard</h1>
+    <p>Welcome back, Dr. {{ request.user.first_name }} {{ request.user.last_name }}. Here's your overview.</p>
+  </div>
+  <hr class="doc-sep">
+
+  <!-- Stats -->
+  <div class="doc-stats">
+    <div class="doc-stat-card">
+      <div class="num">{{ pending_count }}</div>
+      <div class="lbl">Pending Appointments</div>
+    </div>
+    <div class="doc-stat-card">
+      <div class="num">{{ confirmed_count }}</div>
+      <div class="lbl">Confirmed</div>
+    </div>
+    <div class="doc-stat-card">
+      <div class="num">{{ nearby_patients|length }}</div>
+      <div class="lbl">Nearby Patient Predictions</div>
+    </div>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="doc-quick-actions">
+    <a href="/view_search_pat" class="dqa-btn dqa-btn-primary"><i class="fa fa-database"></i> All Patient Data</a>
+    <a href="/profile_doctor" class="dqa-btn"><i class="fa fa-id-card"></i> My Profile</a>
+    <a href="{% url 'change_password' %}" class="dqa-btn"><i class="fa fa-key"></i> Change Password</a>
+  </div>
+
+  <!-- Two column grid -->
+  <div class="doc-grid">
+
+    <!-- Recent Appointments -->
+    <div class="doc-card">
+      <p class="doc-card-title"><i class="fa fa-calendar-alt"></i> Recent Appointments</p>
+      {% if appointments %}
+        {% for appt in appointments %}
+        <div class="appt-row-item">
+          <div>
+            <div class="appt-name">{{ appt.patient.user.first_name }} {{ appt.patient.user.last_name }}</div>
+            <div class="appt-meta">{{ appt.appointment_date|date:"M d, Y" }} · {{ appt.appointment_time|time:"h:i A" }}</div>
+            {% if appt.reason %}<div class="appt-meta">{{ appt.reason|truncatewords:8 }}</div>{% endif %}
+          </div>
+          {% if appt.status == 'pending' %}<span class="status-pill pill-pending">Pending</span>
+          {% elif appt.status == 'confirmed' %}<span class="status-pill pill-confirmed">Confirmed</span>
+          {% elif appt.status == 'completed' %}<span class="status-pill pill-completed">Completed</span>
+          {% elif appt.status == 'cancelled' %}<span class="status-pill pill-cancelled">Cancelled</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="empty-note"><i class="fa fa-calendar-times" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>No appointments yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Nearby Patient Predictions -->
+    <div class="doc-card">
+      <p class="doc-card-title"><i class="fa fa-map-marker-alt"></i> Nearby Patient Predictions</p>
+      {% if nearby_patients %}
+        {% for p in nearby_patients %}
+        <div class="patient-row">
+          <div>
+            <div class="appt-name">{{ p.patient.user.first_name }} {{ p.patient.user.last_name }}</div>
+            <div class="appt-meta">{{ p.created|date:"M d, Y" }} · Accuracy: {{ p.prediction_accuracy|floatformat:1 }}%</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            {% if p.result == "0" %}
+              <span class="result-pill-h">Healthy</span>
+            {% else %}
+              <span class="result-pill-u">At Risk</span>
+            {% endif %}
+            <button class="sum-btn" onclick="loadSummary({{ p.patient.id }}, '{{ p.patient.user.first_name }} {{ p.patient.user.last_name }}')">
+              <i class="fa fa-robot"></i> AI Summary
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="empty-note"><i class="fa fa-users" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>No nearby patient data.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+<script>
+function loadSummary(patientId, patientName) {
+  document.getElementById('summaryPatientName').textContent = patientName;
+  document.getElementById('summaryBody').innerHTML = '<span class="ai-spin"></span> Generating summary...';
+  document.getElementById('summaryModal').classList.add('open');
+  fetch('/ai_patient_summary/' + patientId + '/')
+    .then(r => r.json())
+    .then(data => {
+      if (data.summary) {
+        document.getElementById('summaryBody').textContent = data.summary;
+      } else {
+        document.getElementById('summaryBody').textContent = data.error || 'Failed to generate summary.';
+      }
+    })
+    .catch(() => {
+      document.getElementById('summaryBody').textContent = 'Network error. Please try again.';
+    });
+}
+function closeSummaryModal() {
+  document.getElementById('summaryModal').classList.remove('open');
+}
+document.getElementById('summaryModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSummaryModal();
+});
+</script>
 {% endblock %}

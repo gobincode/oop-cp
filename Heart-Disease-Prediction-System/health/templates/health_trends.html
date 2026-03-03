@@ -1,0 +1,470 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block body %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+
+<style>
+/* ── Reset / Base ─────────────────────────────────────────────────────── */
+.tr-page { padding: 2rem 0 4rem; }
+
+/* ── Cards ────────────────────────────────────────────────────────────── */
+.tr-card {
+  background: #ffffff;
+  border: 1px solid #e8ddd0;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 4px rgba(28,18,8,.05), 0 4px 16px rgba(28,18,8,.04);
+  transition: box-shadow .2s;
+}
+.tr-card:hover { box-shadow: 0 4px 20px rgba(28,18,8,.10); }
+
+/* ── Stat strip ──────────────────────────────────────────────────────── */
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: .85rem;
+  margin-bottom: 1.75rem;
+}
+@media(max-width:900px){ .stat-strip{ grid-template-columns: repeat(3,1fr); } }
+@media(max-width:560px){ .stat-strip{ grid-template-columns: repeat(2,1fr); } }
+
+.stat-tile {
+  background: #fffdf9;
+  border: 1px solid #e8ddd0;
+  border-radius: 14px;
+  padding: 1.1rem 1rem .9rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.stat-tile::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--accent, #5c3d2e);
+  border-radius: 0 0 14px 14px;
+}
+.stat-tile .sv { font-size: 2.1rem; font-weight: 800; line-height: 1; color: var(--accent,#1c1208); }
+.stat-tile .sl { font-size: .7rem; color: #8a7060; text-transform: uppercase; letter-spacing: .06em; margin-top: 5px; }
+
+.stat-tile.s-risk   { --accent: #8b2e2e; }
+.stat-tile.s-ok     { --accent: #2e6b3e; }
+.stat-tile.s-conf   { --accent: #5c3d2e; }
+.stat-tile.s-ecg    { --accent: #3d5a8e; }
+
+/* ── Section label ───────────────────────────────────────────────────── */
+.sec-label {
+  font-size: .7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: #8a7060;
+  margin-bottom: .4rem;
+  display: flex; align-items: center; gap: .4rem;
+}
+.sec-label i { font-size: .75rem; }
+
+.chart-title {
+  font-size: .95rem; font-weight: 700; color: #1c1208;
+  margin-bottom: 1rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+.chart-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Chart containers ────────────────────────────────────────────────── */
+.chart-box { position: relative; }
+.chart-box canvas { border-radius: 8px; }
+
+/* ── Grid layouts ────────────────────────────────────────────────────── */
+.g-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.2rem; }
+.g-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; margin-bottom: 1.2rem; }
+@media(max-width:820px){ .g-2,.g-3 { grid-template-columns: 1fr; } }
+
+/* ── Latest snapshot ─────────────────────────────────────────────────── */
+.snap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media(max-width:560px){ .snap-grid{ grid-template-columns:1fr; } }
+
+.snap-item { background: #faf7f0; border: 1px solid #e8ddd0; border-radius: 12px; padding: 1rem 1.2rem; }
+.snap-item .snap-label { font-size: .72rem; text-transform: uppercase; letter-spacing:.06em; color:#8a7060; margin-bottom:.3rem; }
+.snap-item .snap-val   { font-size: 1.05rem; font-weight: 700; color: #1c1208; }
+.snap-item .snap-meta  { font-size: .78rem; color: #8a7060; margin-top:.25rem; }
+
+/* ── Badge chips ──────────────────────────────────────────────────────── */
+.chip { display:inline-flex; align-items:center; gap:.35rem; padding:3px 10px; border-radius:20px; font-size:.75rem; font-weight:600; }
+.chip-green  { background:#dcf0e3; color:#2e6b3e; }
+.chip-red    { background:#fde8e8; color:#8b2e2e; }
+.chip-yellow { background:#fef3c7; color:#92610a; }
+.chip-blue   { background:#dbeafe; color:#1e4f9a; }
+.chip-purple { background:#ede9fe; color:#4a3a7a; }
+.chip-grey   { background:#f3ede8; color:#8a7060; }
+
+/* ── Empty state ─────────────────────────────────────────────────────── */
+.empty-state { text-align:center; padding:3.5rem 1rem; }
+.empty-state .empty-icon { font-size:3rem; color:#e8ddd0; margin-bottom:1rem; }
+.empty-state h5 { color:#5c3d2e; font-weight:700; }
+.empty-state p  { color:#8a7060; max-width:340px; margin:.5rem auto 1.5rem; }
+
+/* ── PDF button ──────────────────────────────────────────────────────── */
+.pdf-btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: #1c1208; color: #faf7f0;
+  border: none; border-radius: 10px;
+  padding: 11px 24px; font-size: .875rem; font-weight: 600;
+  text-decoration: none; cursor: pointer;
+  transition: background .2s, transform .1s;
+}
+.pdf-btn:hover { background: #5c3d2e; color: #faf7f0; text-decoration: none; transform: translateY(-1px); }
+.pdf-btn i { font-size:.9rem; }
+
+/* ── ECG legend ──────────────────────────────────────────────────────── */
+.ecg-legend { display:flex; gap:1rem; flex-wrap:wrap; margin-top:.75rem; }
+.ecg-legend-item { display:flex; align-items:center; gap:.35rem; font-size:.78rem; color:#5c3d2e; }
+.ecg-legend-dot  { width:10px; height:10px; border-radius:50%; }
+</style>
+
+<div class="page-shell tr-page">
+<div class="container">
+
+  <!-- ── Header ─────────────────────────────────────────────────────── -->
+  <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-4 fade-in">
+    <div>
+      <span class="section-badge"><i class="fas fa-chart-line"></i> analytics</span>
+      <h2 class="section-heading mb-1">Health Risk Trends</h2>
+      <p class="section-subtitle mb-0">Your cardiac health journey — predictions, ECG results and key vitals over time.</p>
+    </div>
+    <a href="{% url 'download_health_report' %}" class="pdf-btn">
+      <i class="fas fa-file-pdf"></i> Download PDF Report
+    </a>
+  </div>
+
+  <!-- ── Stat Strip ──────────────────────────────────────────────────── -->
+  <div class="stat-strip fade-in">
+    <div class="stat-tile">
+      <div class="sv">{{ total_preds }}</div>
+      <div class="sl">Total Predictions</div>
+    </div>
+    <div class="stat-tile s-risk">
+      <div class="sv">{{ at_risk_count }}</div>
+      <div class="sl">At-Risk Results</div>
+    </div>
+    <div class="stat-tile s-ok">
+      <div class="sv">{{ healthy_count }}</div>
+      <div class="sl">Healthy Results</div>
+    </div>
+    <div class="stat-tile s-conf">
+      <div class="sv">{{ avg_accuracy }}<span style="font-size:1rem;">%</span></div>
+      <div class="sl">Avg Confidence</div>
+    </div>
+    <div class="stat-tile s-ecg">
+      <div class="sv">{{ ecg_count }}</div>
+      <div class="sl">ECG Analyses</div>
+    </div>
+  </div>
+
+  {% if total_preds == 0 and ecg_count == 0 %}
+  <!-- ── Empty State ─────────────────────────────────────────────────── -->
+  <div class="tr-card fade-in">
+    <div class="empty-state">
+      <div class="empty-icon"><i class="fas fa-chart-area"></i></div>
+      <h5>No data to show yet</h5>
+      <p>Run your first heart disease prediction or upload an ECG image to start tracking your health trends.</p>
+      <div class="d-flex gap-3 justify-content-center">
+        <a href="/add_heartdetail" class="btn btn-primary"><i class="fas fa-heartbeat mr-1"></i> Predict Risk</a>
+        <a href="/upload_ecg" class="btn btn-outline-primary"><i class="fas fa-wave-square mr-1"></i> Upload ECG</a>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+
+  <!-- ── Latest Snapshot ─────────────────────────────────────────────── -->
+  {% if latest_pred or latest_ecg %}
+  <div class="tr-card mb-3 fade-in">
+    <div class="sec-label"><i class="fas fa-stethoscope"></i> Latest snapshot</div>
+    <div class="snap-grid mt-2">
+      {% if latest_pred %}
+      <div class="snap-item">
+        <div class="snap-label">Last Heart Prediction</div>
+        <div class="snap-val">
+          {% if latest_pred.result == '1' %}
+            <span class="chip chip-red"><i class="fas fa-exclamation-triangle"></i> At Risk</span>
+          {% else %}
+            <span class="chip chip-green"><i class="fas fa-check-circle"></i> Healthy</span>
+          {% endif %}
+        </div>
+        <div class="snap-meta">{{ latest_pred.prediction_accuracy|floatformat:1 }}% model confidence &middot; {{ latest_pred.created|date:"N j, Y" }}</div>
+      </div>
+      {% endif %}
+      {% if latest_ecg %}
+      <div class="snap-item">
+        <div class="snap-label">Last ECG Result</div>
+        <div class="snap-val">
+          {% if latest_ecg.prediction_code == 2 %}
+            <span class="chip chip-green"><i class="fas fa-heartbeat"></i> {{ latest_ecg.prediction_label }}</span>
+          {% elif latest_ecg.prediction_code == 1 %}
+            <span class="chip chip-red"><i class="fas fa-bolt"></i> {{ latest_ecg.prediction_label }}</span>
+          {% elif latest_ecg.prediction_code == 0 %}
+            <span class="chip chip-yellow"><i class="fas fa-exclamation"></i> {{ latest_ecg.prediction_label }}</span>
+          {% else %}
+            <span class="chip chip-purple"><i class="fas fa-history"></i> {{ latest_ecg.prediction_label }}</span>
+          {% endif %}
+        </div>
+        <div class="snap-meta">
+          {% if latest_ecg.confidence %}{{ latest_ecg.confidence|floatformat:0 }}% confidence &middot; {% endif %}{{ latest_ecg.created|date:"N j, Y" }}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if total_preds > 0 %}
+  <!-- ── Row 1: Risk Timeline + Confidence ──────────────────────────── -->
+  <div class="g-2 fade-in">
+    <div class="tr-card">
+      <div class="chart-title">
+        <span class="chart-dot" style="background:#8b2e2e;"></span>
+        Heart Disease Risk Over Time
+      </div>
+      <div class="chart-box" style="height:220px;"><canvas id="riskChart"></canvas></div>
+    </div>
+    <div class="tr-card">
+      <div class="chart-title">
+        <span class="chart-dot" style="background:#5c3d2e;"></span>
+        Model Confidence (%)
+      </div>
+      <div class="chart-box" style="height:220px;"><canvas id="accuracyChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ── Row 2: Vitals ──────────────────────────────────────────────── -->
+  <div class="g-3 fade-in">
+    <div class="tr-card">
+      <div class="chart-title">
+        <span class="chart-dot" style="background:#b8860b;"></span>
+        Cholesterol <span style="font-size:.78rem;color:#8a7060;font-weight:400;">mg/dL</span>
+      </div>
+      <div class="chart-box" style="height:180px;"><canvas id="cholChart"></canvas></div>
+    </div>
+    <div class="tr-card">
+      <div class="chart-title">
+        <span class="chart-dot" style="background:#3d5a8e;"></span>
+        Resting BP <span style="font-size:.78rem;color:#8a7060;font-weight:400;">mmHg</span>
+      </div>
+      <div class="chart-box" style="height:180px;"><canvas id="bpChart"></canvas></div>
+    </div>
+    <div class="tr-card">
+      <div class="chart-title">
+        <span class="chart-dot" style="background:#2e6b3e;"></span>
+        Max Heart Rate <span style="font-size:.78rem;color:#8a7060;font-weight:400;">bpm</span>
+      </div>
+      <div class="chart-box" style="height:180px;"><canvas id="hrChart"></canvas></div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if ecg_count > 0 %}
+  <!-- ── ECG Timeline ────────────────────────────────────────────────── -->
+  <div class="tr-card fade-in" style="margin-bottom:1.2rem;">
+    <div class="chart-title">
+      <span class="chart-dot" style="background:#3d5a8e;"></span>
+      ECG Analysis Timeline
+    </div>
+    <div class="chart-box" style="height:190px;"><canvas id="ecgChart"></canvas></div>
+    <div class="ecg-legend">
+      <div class="ecg-legend-item"><span class="ecg-legend-dot" style="background:#2e6b3e;"></span>Normal</div>
+      <div class="ecg-legend-item"><span class="ecg-legend-dot" style="background:#8b2e2e;"></span>Myocardial Infarction</div>
+      <div class="ecg-legend-item"><span class="ecg-legend-dot" style="background:#b8860b;"></span>Abnormal Heartbeat</div>
+      <div class="ecg-legend-item"><span class="ecg-legend-dot" style="background:#4a3a7a;"></span>History of MI</div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% endif %}
+
+  <!-- ── Footer Actions ─────────────────────────────────────────────── -->
+  <div class="card-actions justify-content-center mt-4">
+    <a href="{% url 'patient_home' %}" class="btn btn-outline-primary"><i class="fas fa-home mr-1"></i> Dashboard</a>
+    <a href="/add_heartdetail" class="btn btn-primary"><i class="fas fa-plus mr-1"></i> New Prediction</a>
+    <a href="/upload_ecg" class="btn btn-primary"><i class="fas fa-wave-square mr-1"></i> Upload ECG</a>
+  </div>
+
+</div>
+</div>
+
+<script>
+const PALETTE = {
+  red:    '#8b2e2e', redBg:    '#8b2e2e18',
+  green:  '#2e6b3e', greenBg:  '#2e6b3e15',
+  brown:  '#5c3d2e', brownBg:  '#5c3d2e15',
+  gold:   '#b8860b', goldBg:   '#b8860b15',
+  blue:   '#3d5a8e', blueBg:   '#3d5a8e15',
+  purple: '#4a3a7a',
+  grid:   '#f0e8dc',
+  muted:  '#8a7060',
+};
+
+const baseOpts = (yLabel='') => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#1c1208ee',
+      titleColor: '#faf7f0',
+      bodyColor: '#e8ddd0',
+      cornerRadius: 8,
+      padding: 10,
+    },
+  },
+  scales: {
+    x: {
+      ticks: { font: { size: 10, family: 'Inter, sans-serif' }, color: PALETTE.muted, maxRotation: 45 },
+      grid: { color: PALETTE.grid, drawBorder: false },
+    },
+    y: {
+      ticks: { font: { size: 10, family: 'Inter, sans-serif' }, color: PALETTE.muted },
+      grid: { color: PALETTE.grid, drawBorder: false },
+      title: yLabel ? { display: true, text: yLabel, color: PALETTE.muted, font: { size: 9 } } : undefined,
+    },
+  },
+});
+
+function sparkLine(id, labels, data, color, bgColor, yLabel='') {
+  const ctx = document.getElementById(id);
+  if (!ctx || !labels?.length) return;
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: color,
+        backgroundColor: bgColor,
+        borderWidth: 2.5,
+        pointRadius: data.length === 1 ? 5 : 3,
+        pointHoverRadius: 6,
+        pointBackgroundColor: color,
+        tension: 0.45,
+        fill: true,
+        spanGaps: true,
+      }],
+    },
+    options: baseOpts(yLabel),
+  });
+}
+
+fetch('/health_trends_data/')
+  .then(r => r.json())
+  .then(d => {
+    const P = d.predictions || {};
+    const E = d.ecg || {};
+
+    /* Risk chart – stepped, coloured points */
+    if (document.getElementById('riskChart') && P.labels?.length) {
+      new Chart(document.getElementById('riskChart'), {
+        type: 'line',
+        data: {
+          labels: P.labels,
+          datasets: [{
+            data: P.risk,
+            borderColor: ctx => {
+              const v = P.risk[ctx.dataIndex ?? 0];
+              return v === 1 ? PALETTE.red : PALETTE.green;
+            },
+            segment: {
+              borderColor: ctx => P.risk[ctx.p1DataIndex] === 1 ? PALETTE.red : PALETTE.green,
+            },
+            backgroundColor: 'transparent',
+            borderWidth: 2.5,
+            pointRadius: 8,
+            pointHoverRadius: 11,
+            pointBackgroundColor: P.risk.map(v => v === 1 ? PALETTE.red : PALETTE.green),
+            pointBorderColor: P.risk.map(v => v === 1 ? PALETTE.red + 'aa' : PALETTE.green + 'aa'),
+            pointBorderWidth: 3,
+            stepped: 'middle',
+            fill: false,
+          }],
+        },
+        options: {
+          ...baseOpts(),
+          scales: {
+            ...baseOpts().scales,
+            y: {
+              ...baseOpts().scales.y,
+              min: -0.3, max: 1.5,
+              ticks: {
+                stepSize: 1,
+                callback: v => v === 1 ? 'At Risk' : v === 0 ? 'Healthy' : '',
+                font: { size: 10 }, color: PALETTE.muted,
+              },
+            },
+          },
+        },
+      });
+    }
+
+    sparkLine('accuracyChart', P.labels, P.accuracy,  PALETTE.brown,  PALETTE.brownBg, '%');
+    sparkLine('cholChart',     P.labels, P.cholesterol, PALETTE.gold,  PALETTE.goldBg,  'mg/dL');
+    sparkLine('bpChart',       P.labels, P.blood_pressure, PALETTE.blue, PALETTE.blueBg, 'mmHg');
+    sparkLine('hrChart',       P.labels, P.heart_rate, PALETTE.green, PALETTE.greenBg, 'bpm');
+
+    /* ECG scatter */
+    if (document.getElementById('ecgChart') && E.labels?.length) {
+      const ecgColors = { 0: PALETTE.gold, 1: PALETTE.red, 2: PALETTE.green, 3: PALETTE.purple };
+      const ecgNames  = E.label_map || { 0:'Abnormal', 1:'MI', 2:'Normal', 3:'History of MI' };
+      new Chart(document.getElementById('ecgChart'), {
+        type: 'scatter',
+        data: {
+          datasets: [{
+            data: E.codes.map((c, i) => ({ x: i, y: c })),
+            backgroundColor: E.codes.map(c => (ecgColors[c] || PALETTE.muted) + 'cc'),
+            borderColor:     E.codes.map(c =>  ecgColors[c] || PALETTE.muted),
+            borderWidth: 2,
+            pointRadius: 12,
+            pointHoverRadius: 15,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1c1208ee',
+              titleColor: '#faf7f0',
+              bodyColor: '#e8ddd0',
+              cornerRadius: 8,
+              padding: 10,
+              callbacks: {
+                title: ctx => E.labels[ctx[0].dataIndex],
+                label: ctx => {
+                  const i = ctx.dataIndex;
+                  const conf = E.confidence?.[i];
+                  return ` ${ecgNames[E.codes[i]] || 'Unknown'}${conf ? '  ·  ' + conf + '% confidence' : ''}`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              ticks: { callback: (_, i) => E.labels[i] || '', font: { size: 10 }, color: PALETTE.muted, maxRotation: 45 },
+              grid: { color: PALETTE.grid, drawBorder: false },
+            },
+            y: {
+              min: -0.6, max: 3.6,
+              ticks: {
+                stepSize: 1,
+                callback: v => ecgNames[v] || '',
+                font: { size: 9 }, color: PALETTE.muted,
+              },
+              grid: { color: PALETTE.grid, drawBorder: false },
+            },
+          },
+        },
+      });
+    }
+  })
+  .catch(err => console.error('Trend data fetch failed:', err));
+</script>
+{% endblock %}

@@ -1,51 +1,225 @@
 {% extends 'index.html' %}
 {% load static %}
 {% block body %}
+<style>
+  .rec-shell { max-width:1080px; margin:48px auto; padding:0 20px 56px; }
+  .rec-header { margin-bottom:24px; }
+  .rec-header h1 { font-size:1.6rem; font-weight:700; color:#1c1208; margin:0 0 4px; }
+  .rec-header p  { color:#8a7060; font-size:0.9rem; margin:0; }
+  .rec-sep { border:none; border-top:1px solid #e8ddd0; margin:0 0 24px; }
 
-<div class="container-fluid" style="width:90%;margin-top:8%">
-                    <div class="container-fluid">
-                        <h1 align="center" class="w3ls-title text-uppercase text-dark font-weight-bold">Search Logs</h1>
-                         </div><hr>
-                                <table id="example" class="display" style="width:100%">
-                                  <thead>
-                                    <tr>
-                                      <th>#</th>
-                                      {% if request.user.patient_set.all.0 %}
-                                      <th>Date</th>
-                                      {% else %}
-                                      <th>Patient Name</th>
-                                      {% endif %}
-                                      <th>Accuracy</th>
-                                      <th>Result</th>
-                                      <th>HeartValue</th>
-                                      <th>Action</th>
+  /* Tabs (patient only) */
+  .rec-tabs { display:flex; gap:6px; margin-bottom:24px; flex-wrap:wrap; }
+  .rec-tab {
+    padding:8px 20px; border-radius:8px; font-size:0.875rem; font-weight:500;
+    cursor:pointer; border:1.5px solid #e8ddd0; background:#fffdf9; color:#5c4a3a;
+    transition:background 0.15s, border-color 0.15s;
+  }
+  .rec-tab.active { background:linear-gradient(135deg,#3d2619,#5c3d2e); color:#faf7f0; border-color:transparent; }
+  .rec-panel { display:none; }
+  .rec-panel.active { display:block; }
 
-                                  </tr>
-                              </thead>
-                              <tbody>
-                              {% for i in data %}
-                                <tr>
-                                  <td>{{forloop.counter}}</td>
-                                  {% if request.user.patient_set.all.0 %}
-                                    <td>{{i.created}}</td>
-                                  {% else %}
-                                  <td>{{i.patient.user.first_name}} {{i.patient.user.last_name}}</td>
-                                  {% endif %}
-                                    <td>{{i.prediction_accuracy}}</td>
-                                    <td>{% if i.result == "0" %}
-                                      <h5 style="color:green">Healty</h5>
-                                      {% else %}
-                                      <h5 style="color:red">Unhealty</h5>
-                                  {% endif %}
-                                  </td>
-                                  <td>{{i.values_list}}</td>
-                                  <td style="width:150px">
+  /* Cards */
+  .rec-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; overflow:hidden; box-shadow:0 2px 12px rgba(28,18,8,0.07); }
+  .rec-card-head { background:linear-gradient(135deg,#1c1208,#5c3d2e); padding:1rem 1.5rem; display:flex; align-items:center; gap:8px; }
+  .rec-card-head h3 { margin:0; color:#faf7f0; font-size:1.05rem; font-weight:600; }
+  .rec-card-body { padding:1.25rem; }
 
+  /* Tables */
+  .rec-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+  .rec-table thead tr { background:#f5f0e4; }
+  .rec-table thead th { padding:0.8rem 1rem; text-align:left; font-size:0.74rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#8a7060; border-bottom:1px solid #e8ddd0; }
+  .rec-table tbody tr { border-bottom:1px solid #f0ebe0; transition:background 0.12s; }
+  .rec-table tbody tr:last-child { border-bottom:none; }
+  .rec-table tbody tr:hover { background:#faf7f0; }
+  .rec-table tbody td { padding:0.8rem 1rem; color:#5c4a3a; vertical-align:middle; }
 
-                                      <a href="/delete_searched/{{i.id}}" ><button class="btn btn-danger" onclick="return confirm('Are you sure?')"><i class="fa fa-trash-o"></i></button></a></td>
-                              </tr>
-                              {% endfor %}
-                          </tbody>
-                      </table>
-                  </div>
+  .pill-h { display:inline-flex;align-items:center;gap:4px; padding:3px 10px; border-radius:99px; font-size:0.73rem; font-weight:600; background:#eaf0ea; color:#2e5e35; border:1px solid #b8d4ba; }
+  .pill-u { display:inline-flex;align-items:center;gap:4px; padding:3px 10px; border-radius:99px; font-size:0.73rem; font-weight:600; background:#fdf0ee; color:#8b2e2e; border:1px solid #e8b4a8; }
+  .pill-normal  { display:inline-flex;align-items:center;gap:4px; padding:3px 10px; border-radius:99px; font-size:0.73rem; font-weight:600; background:#e8f5e9; color:#2e5e35; border:1px solid #b8d4ba; }
+  .pill-mi      { display:inline-flex;align-items:center;gap:4px; padding:3px 10px; border-radius:99px; font-size:0.73rem; font-weight:600; background:#fdf0ee; color:#8b2e2e; border:1px solid #e8b4a8; }
+  .pill-warn    { display:inline-flex;align-items:center;gap:4px; padding:3px 10px; border-radius:99px; font-size:0.73rem; font-weight:600; background:#fef8ec; color:#7a5a1a; border:1px solid #e8d9a0; }
+
+  .rec-del-btn { display:inline-flex;align-items:center;gap:4px; padding:5px 12px; border-radius:7px; font-size:0.78rem; background:#fdf0ee; color:#8b2e2e; border:1px solid #e8b4a8; text-decoration:none; cursor:pointer; }
+  .rec-del-btn:hover { background:#f5dbd8; text-decoration:none; color:#6b1e1e; }
+  .rec-view-btn { display:inline-flex;align-items:center;gap:4px; padding:5px 12px; border-radius:7px; font-size:0.78rem; background:linear-gradient(135deg,#3d2619,#5c3d2e); color:#faf7f0; border:none; text-decoration:none; }
+  .rec-view-btn:hover { opacity:0.88; color:#faf7f0; text-decoration:none; }
+  .rec-actions-row { display:flex; gap:8px; flex-wrap:wrap; }
+
+  .rec-empty { text-align:center; padding:2.5rem; color:#8a7060; background:#faf7f0; border:1px dashed #d9cbba; border-radius:10px; }
+  .rec-empty h5 { color:#3d2619; font-weight:700; margin-bottom:6px; }
+
+  .ecg-thumb { width:80px; height:48px; object-fit:cover; border-radius:6px; border:1px solid #e8ddd0; }
+  .rec-back-row { display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
+  .rec-back-btn { display:inline-flex;align-items:center;gap:6px; padding:8px 18px; border-radius:8px; font-size:0.85rem; font-weight:500; text-decoration:none; border:1.5px solid #e8ddd0; background:#fffdf9; color:#5c4a3a; }
+  .rec-back-btn:hover { background:#f5f0e4; border-color:#9e7c66; color:#3d2619; text-decoration:none; }
+</style>
+
+<div class="rec-shell">
+  <div class="rec-header">
+    {% if is_patient %}
+      <h1><i class="fa fa-folder-open mr-2" style="color:#5c3d2e;"></i>My Records</h1>
+      <p>Your heart prediction history and ECG analysis results.</p>
+    {% else %}
+      <h1><i class="fa fa-database mr-2" style="color:#5c3d2e;"></i>Patient Prediction Data</h1>
+      <p>Prediction logs for patients in your area.</p>
+    {% endif %}
+  </div>
+  <hr class="rec-sep">
+
+  {% if is_patient %}
+  <!-- Tabs for patients -->
+  <div class="rec-tabs">
+    <button class="rec-tab active" onclick="switchTab('pred-tab', this)"><i class="fa fa-heartbeat mr-1"></i> Prediction History</button>
+    <button class="rec-tab" onclick="switchTab('ecg-tab', this)"><i class="fa fa-wave-square mr-1"></i> ECG History</button>
+  </div>
+
+  <!-- Panel: Prediction History -->
+  <div id="pred-tab" class="rec-panel active">
+    <div class="rec-card">
+      <div class="rec-card-head"><i class="fa fa-chart-line" style="color:#e8c9a0;"></i><h3>Heart Disease Predictions</h3></div>
+      <div class="rec-card-body">
+        {% if data %}
+        <div style="overflow-x:auto;">
+          <table class="rec-table">
+            <thead><tr>
+              <th>#</th><th>Date</th><th>Accuracy</th><th>Result</th><th>Values</th><th>Action</th>
+            </tr></thead>
+            <tbody>
+            {% for i in data %}
+            <tr>
+              <td style="color:#b8a898;">{{ forloop.counter }}</td>
+              <td style="color:#1c1208;font-weight:500;">{{ i.created|date:"M d, Y" }}<br><small style="color:#b8a898;">{{ i.created|date:"H:i" }}</small></td>
+              <td><strong style="color:#3d2619;">{{ i.prediction_accuracy }}%</strong></td>
+              <td>
+                {% if i.result == "0" %}<span class="pill-h"><i class="fa fa-check-circle"></i> Healthy</span>
+                {% else %}<span class="pill-u"><i class="fa fa-exclamation-triangle"></i> At Risk</span>{% endif %}
+              </td>
+              <td style="font-size:0.75rem;color:#8a7060;max-width:160px;word-break:break-all;">{{ i.values_list|truncatechars:60 }}</td>
+              <td>
+                <a href="/delete_searched/{{ i.id }}" class="rec-del-btn" onclick="return confirm('Delete this record?')"><i class="fa fa-trash"></i> Delete</a>
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="rec-empty">
+          <i class="fa fa-chart-line" style="font-size:2rem;color:#d9cbba;display:block;margin-bottom:10px;"></i>
+          <h5>No predictions yet</h5>
+          <p style="margin-bottom:14px;">Run your first heart disease assessment.</p>
+          <a href="{% url 'add_heartdetail' %}" class="rec-view-btn"><i class="fa fa-heartbeat"></i> Run Prediction</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: ECG History -->
+  <div id="ecg-tab" class="rec-panel">
+    <div class="rec-card">
+      <div class="rec-card-head"><i class="fa fa-wave-square" style="color:#e8c9a0;"></i><h3>ECG Analysis History</h3></div>
+      <div class="rec-card-body">
+        {% if ecg_records %}
+        <div style="overflow-x:auto;">
+          <table class="rec-table">
+            <thead><tr>
+              <th>#</th><th>Date</th><th>ECG Image</th><th>Result</th><th>Confidence</th><th>Action</th>
+            </tr></thead>
+            <tbody>
+            {% for r in ecg_records %}
+            <tr>
+              <td style="color:#b8a898;">{{ forloop.counter }}</td>
+              <td style="color:#1c1208;font-weight:500;">{{ r.created|date:"M d, Y" }}<br><small style="color:#b8a898;">{{ r.created|date:"H:i" }}</small></td>
+              <td><img src="{{ r.ecg_image.url }}" alt="ECG" class="ecg-thumb"></td>
+              <td>
+                {% if r.prediction_code == 2 %}<span class="pill-normal"><i class="fa fa-check-circle"></i> {{ r.prediction_label }}</span>
+                {% elif r.prediction_code == 1 %}<span class="pill-mi"><i class="fa fa-exclamation-triangle"></i> {{ r.prediction_label }}</span>
+                {% else %}<span class="pill-warn"><i class="fa fa-exclamation-circle"></i> {{ r.prediction_label }}</span>{% endif %}
+              </td>
+              <td><strong style="color:#3d2619;">{% if r.confidence %}{{ r.confidence|floatformat:1 }}%{% else %}&mdash;{% endif %}</strong></td>
+              <td>
+                <a href="{% url 'ecg_result' r.id %}" class="rec-view-btn"><i class="fa fa-eye"></i> View</a>
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="rec-empty">
+          <i class="fa fa-file-medical" style="font-size:2rem;color:#d9cbba;display:block;margin-bottom:10px;"></i>
+          <h5>No ECG records yet</h5>
+          <p style="margin-bottom:14px;">Upload an ECG image for AI analysis.</p>
+          <a href="{% url 'upload_ecg' %}" class="rec-view-btn"><i class="fa fa-upload"></i> Upload ECG</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="rec-back-row">
+    <a href="{% url 'patient_home' %}" class="rec-back-btn"><i class="fa fa-home"></i> Dashboard</a>
+    <a href="{% url 'add_heartdetail' %}" class="rec-back-btn"><i class="fa fa-heartbeat"></i> Run New Prediction</a>
+    <a href="{% url 'upload_ecg' %}" class="rec-back-btn"><i class="fa fa-upload"></i> Upload ECG</a>
+  </div>
+
+  {% else %}
+  <!-- Doctor / Admin view: flat table -->
+  <div class="rec-card">
+    <div class="rec-card-head"><i class="fa fa-database" style="color:#e8c9a0;"></i><h3>Patient Prediction Logs</h3></div>
+    <div class="rec-card-body">
+      {% if data %}
+      <div style="overflow-x:auto;">
+        <table class="rec-table" id="example">
+          <thead><tr>
+            <th>#</th><th>Patient</th><th>Date</th><th>Accuracy</th><th>Result</th><th>Values</th>
+            {% if request.user.is_staff %}<th>Action</th>{% endif %}
+          </tr></thead>
+          <tbody>
+          {% for i in data %}
+          <tr>
+            <td style="color:#b8a898;">{{ forloop.counter }}</td>
+            <td style="font-weight:600;color:#1c1208;">{{ i.patient.user.first_name }} {{ i.patient.user.last_name }}</td>
+            <td>{{ i.created|date:"M d, Y" }}</td>
+            <td><strong style="color:#3d2619;">{{ i.prediction_accuracy }}%</strong></td>
+            <td>
+              {% if i.result == "0" %}<span class="pill-h"><i class="fa fa-check-circle"></i> Healthy</span>
+              {% else %}<span class="pill-u"><i class="fa fa-exclamation-triangle"></i> At Risk</span>{% endif %}
+            </td>
+            <td style="font-size:0.75rem;color:#8a7060;max-width:160px;word-break:break-all;">{{ i.values_list|truncatechars:60 }}</td>
+            {% if request.user.is_staff %}
+            <td><a href="/delete_searched/{{ i.id }}" class="rec-del-btn" onclick="return confirm('Delete this record?')"><i class="fa fa-trash"></i></a></td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="rec-empty"><h5>No prediction data found.</h5></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="rec-back-row">
+    {% if request.user.doctor_set.all.0 %}
+      <a href="{% url 'doctor_home' %}" class="rec-back-btn"><i class="fa fa-home"></i> Dashboard</a>
+    {% elif request.user.is_staff %}
+      <a href="{% url 'admin_home' %}" class="rec-back-btn"><i class="fa fa-home"></i> Dashboard</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+function switchTab(panelId, btn) {
+  document.querySelectorAll('.rec-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.rec-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
 {% endblock %}

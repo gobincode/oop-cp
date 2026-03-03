@@ -71,4 +71,28 @@ urlpatterns = [
     path('ai_call_handler/', ai_call_handler, name="ai_call_handler"),
     path('call_status/', call_status, name="call_status"),
 
+    # AI Features
+    path('ai_patient_summary/<int:patient_id>/', ai_patient_summary, name="ai_patient_summary"),
+    path('medical_chat_from_result/<str:pred>/<str:accuracy>/', medical_chat_from_result, name="medical_chat_from_result"),
+
+    # Medical Document Parser
+    path('medical_documents', medical_documents, name="medical_documents"),
+    path('upload_medical_document', upload_medical_document, name="upload_medical_document"),
+    path('delete_medical_document/<int:doc_id>/', delete_medical_document, name="delete_medical_document"),
+
+    # Voice Symptom Collector
+    path('voice_transcribe', voice_transcribe, name="voice_transcribe"),
+
+    # Health Trends Dashboard & PDF Report
+    path('health_trends', health_trends, name="health_trends"),
+    path('health_trends_data/', health_trends_data, name="health_trends_data"),
+    path('download_health_report', download_health_report, name="download_health_report"),
+
+    # AI Medical Chat
+    path('medical_chat', medical_chat, name="medical_chat"),
+    path('medical_chat/<int:session_id>/', medical_chat, name="medical_chat_session"),
+    path('medical_chat_new', medical_chat_new, name="medical_chat_new"),
+    path('medical_chat_send', medical_chat_send, name="medical_chat_send"),
+    path('medical_chat_delete/<int:session_id>/', medical_chat_delete_session, name="medical_chat_delete_session"),
+
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

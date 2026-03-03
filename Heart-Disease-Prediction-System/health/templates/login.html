@@ -20,35 +20,43 @@
     window.location="{% url 'doctor_home' %}";
 </script>
 {% endif %}
-{% if error == "not" %}
-<script>
-    alert('Username & Password are not Matching');
-</script>
-{% endif %}
+{% comment %}error == "not" is handled inline below{% endcomment %}
 
 	<!-- login -->
-	<section class="logins py-5">
+	<section class="logins py-5" style="background: #faf7f0; min-height: calc(100vh - 140px);">
 		<div class="container py-xl-5 py-lg-3">
 			<div class="title-section mb-md-5 mb-4 text-center fade-in">
-				<h3 class="w3ls-title text-uppercase font-weight-bold">Welcome Back</h3>
-				<p class="mt-3" style="color: #64748b;">Sign in to access your dashboard</p>
+				<h3 class="w3ls-title text-uppercase font-weight-bold" style="color: #1c1208;">Welcome Back</h3>
+				<p class="mt-3" style="color: #8a7060;">Sign in to access your dashboard</p>
 			</div>
-			<div class="login-wrapper fade-in">
+
+			{% if error == "not" %}
+			<div style="max-width:500px; margin: 0 auto 1.5rem; background:#fdf0ee; border:1px solid #e8b4a8; border-left: 4px solid #c0654f; border-radius:8px; padding:0.85rem 1.25rem; color:#8b2e2e; font-size:0.9rem;">
+				<i class="fa fa-exclamation-circle mr-2"></i> Username &amp; Password do not match. Please try again.
+			</div>
+			{% endif %}
+
+			<div class="login-wrapper fade-in" style="background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; box-shadow: 0 4px 24px rgba(28,18,8,0.1);">
 				<form action="" method="post">
 					{% csrf_token %}
 					<div class="form-group mb-4">
-						<label>Username</label>
-						<input type="text" class="form-control" name="uname" placeholder="Enter your username" required="">
-						<small class="form-text" style="color: #94a3b8;">We'll never share your details with anyone else.</small>
+						<label style="color:#3d2619; font-weight:600; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.04em;">Username</label>
+						<input type="text" class="form-control" name="uname" placeholder="Enter your username" required=""
+							style="background:#faf7f0; border:1.5px solid #e8ddd0; border-radius:8px; color:#1c1208; padding:0.75rem 1rem;">
+						<small style="color:#b8a898;">We'll never share your details with anyone else.</small>
 					</div>
 					<div class="form-group mb-4">
-						<label>Password</label>
-						<input type="password" class="form-control" name="pwd" placeholder="Enter your password" required="">
+						<label style="color:#3d2619; font-weight:600; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.04em;">Password</label>
+						<input type="password" class="form-control" name="pwd" placeholder="Enter your password" required=""
+							style="background:#faf7f0; border:1.5px solid #e8ddd0; border-radius:8px; color:#1c1208; padding:0.75rem 1rem;">
 					</div>
-					<button type="submit" class="btn submit mt-3 w-100">Sign In</button>
-					<p class="text-center mt-4" style="color: #64748b;">
-						Don't have an account? 
-						<a href="{% url 'signup' %}" style="font-weight: 600; color: #6366f1;">Register here</a>
+					<button type="submit" class="btn submit mt-3 w-100"
+						style="background: linear-gradient(135deg, #3d2619 0%, #5c3d2e 100%) !important; color:#faf7f0; border:none; border-radius:8px; padding:0.8rem; font-weight:600; letter-spacing:0.03em;">
+						Sign In
+					</button>
+					<p class="text-center mt-4" style="color:#8a7060;">
+						Don't have an account?
+						<a href="{% url 'signup' %}" style="font-weight:600; color:#5c3d2e;">Register here</a>
 					</p>
 				</form>
 			</div>

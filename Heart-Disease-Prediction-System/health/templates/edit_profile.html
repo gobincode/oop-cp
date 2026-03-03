@@ -1,70 +1,68 @@
 {% extends 'index.html' %}
 {% load static %}
 {% block body %}
-	<!-- register -->
+
 {% if terror == "create" %}
-<script>
-    alert('Detailed Updated Successfully');
-    window.location="{% url 'profile_doctor' %}";
-</script>
+<script>window.location="{% url 'profile_doctor' %}";</script>
 {% endif %}
 
+<style>
+  .ep-shell { max-width:600px; margin:56px auto; padding:0 20px 56px; }
+  .ep-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; overflow:hidden; box-shadow:0 2px 14px rgba(28,18,8,0.08); }
+  .ep-card-head { background:linear-gradient(135deg,#1c1208,#5c3d2e); padding:1.25rem 1.5rem; display:flex; align-items:center; gap:8px; }
+  .ep-card-head h3 { margin:0; color:#faf7f0; font-size:1.1rem; font-weight:600; }
+  .ep-card-body { padding:1.75rem; }
+  .ep-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+  @media(max-width:600px){ .ep-grid{grid-template-columns:1fr;} }
+  .ep-field { display:flex; flex-direction:column; gap:5px; }
+  .ep-field label { font-size:0.8rem; font-weight:600; color:#5c4a3a; }
+  .ep-field input { padding:9px 12px; border:1.5px solid #d9cbba; border-radius:8px; background:#faf7f0; color:#1c1208; font-size:0.9rem; outline:none; }
+  .ep-field input:focus { border-color:#5c3d2e; background:#fffdf9; box-shadow:0 0 0 3px rgba(92,61,46,0.1); }
+  .ep-avatar-row { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .ep-avatar { width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid #e8ddd0; }
+  .ep-sep { border:none; border-top:1px solid #e8ddd0; margin:1.5rem 0; }
+  .ep-actions { display:flex; gap:10px; flex-wrap:wrap; }
+  .ep-btn-primary { flex:1; padding:10px; border-radius:8px; background:linear-gradient(135deg,#3d2619,#5c3d2e); color:#faf7f0; font-size:0.9rem; font-weight:600; border:none; cursor:pointer; }
+  .ep-btn-primary:hover { opacity:0.88; }
+  .ep-btn-back { display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:8px;border:1.5px solid #e8ddd0;background:#fffdf9;color:#5c4a3a;font-size:0.875rem;text-decoration:none; }
+  .ep-btn-back:hover { background:#f5f0e4;border-color:#9e7c66;color:#3d2619;text-decoration:none; }
+</style>
 
-	<section class="logins py-5">
-		<div class="container py-xl-5 py-lg-3">
-			<div class="title-section mb-md-5 mb-4">
-				<h6 class="w3ls-title-sub"></h6>
-				<h3 class="w3ls-title text-uppercase text-dark font-weight-bold">Update My Detail</h3>
-			</div><hr/>
-			<div class="login px-sm-12" style="width:100%">
-				<form action="" method="post" enctype="multipart/form-data">
-					{% csrf_token %}
-					<div class="form-group row">
-						<div class="col-md-6">
-						<label>First Name</label>
-						<input type="text" class="form-control" value="{{doc.user.first_name}}" name="fname" placeholder="First Name" required="">
-						</div>
-						<div class="col-md-6">
-						<label>Last Name</label>
-						<input type="text" class="form-control" value="{{doc.user.last_name}}" name="lname" placeholder="Last Name" required="">
-						</div>
-					</div>
-					<div class="form-group row">
-						<div class="col-md-6">
-						<label>Email</label>
-						<input type="email" class="form-control" value="{{doc.user.email}}" name="email" placeholder="Enter Email" required="">
-						</div>
-						<div class="col-md-6">
-						<label>Contact</label>
-						<input type="text" class="form-control" name="contact" value="{{doc.contact}}" placeholder="Enter Contact" required="">
-						</div>
-					</div>
-					{% if error != "pat" %}
-					<div class="form-group row">
-						<div class="col-md-12">
-						<label>Specialist</label>
-							<input name="type" class="form-control" value="{{doc.category}}">
-						</div>
-					</div>
-					{% endif %}
-					<div class="form-group row">
-						<div class="col-md-6">
-						<label class="mb-2">City</label>
-						<input type="text" class="form-control" value="{{doc.address}}" name="add" id="password1" placeholder="Enter Address" required="">
-						</div>
-						<div class="col-md-4">
-						<label>Image</label>
-						<input type="file" class="form-control" name="image">
-						</div>
-                        <div class="col-md-2">
-						<img src="{{doc.image.url}}" style="width:100%;height:150px">
-						</div>
-					</div>
-					<button type="submit" class="btn submit mt-4" style="background-color: #726f6e;">Update Detail</button>
-				</form>
-			</div>
-		</div>
-	</section>
-	<!-- //register -->
+<div class="ep-shell">
+  <div class="ep-card">
+    <div class="ep-card-head">
+      <i class="fa fa-edit" style="color:#e8c9a0;"></i>
+      <h3>Update My Profile</h3>
+    </div>
+    <div class="ep-card-body">
+      <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="ep-grid">
+          <div class="ep-field"><label>First Name</label><input type="text" name="fname" value="{{ doc.user.first_name }}" placeholder="First Name" required></div>
+          <div class="ep-field"><label>Last Name</label><input type="text" name="lname" value="{{ doc.user.last_name }}" placeholder="Last Name" required></div>
+          <div class="ep-field"><label>Email</label><input type="email" name="email" value="{{ doc.user.email }}" placeholder="Email" required></div>
+          <div class="ep-field"><label>Contact</label><input type="text" name="contact" value="{{ doc.contact }}" placeholder="Phone number" required></div>
+          {% if error != "pat" %}
+          <div class="ep-field"><label>Specialist</label><input name="type" value="{{ doc.category }}" placeholder="e.g. Cardiologist"></div>
+          {% endif %}
+          <div class="ep-field"><label>City / Address</label><input type="text" name="add" value="{{ doc.address }}" placeholder="City or address" required></div>
+        </div>
+        <hr class="ep-sep">
+        <div class="ep-field" style="margin-bottom:1.25rem;">
+          <label>Profile Image</label>
+          <div class="ep-avatar-row">
+            <img src="{{ doc.image.url }}" class="ep-avatar" alt="Current photo">
+            <input type="file" name="image" style="flex:1;">
+          </div>
+          <small style="color:#b8a898;font-size:0.75rem;">Leave blank to keep current image.</small>
+        </div>
+        <div class="ep-actions">
+          <a href="{% url 'profile_doctor' %}" class="ep-btn-back"><i class="fa fa-arrow-left"></i> Back</a>
+          <button type="submit" class="ep-btn-primary"><i class="fa fa-save mr-1"></i> Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

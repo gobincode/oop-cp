@@ -1,40 +1,56 @@
 {% extends 'index.html' %}
 {% load static %}
 {% block body %}
+
 {% if terror == "create" %}
-<script>
-    alert('Send Feedback Successfully');
-    window.location="{% url 'sent_feedback' %}";
-</script>
+<div id="success-banner" style="position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:9999;background:#eaf0ea;border:1px solid #b8d4ba;color:#2e5e35;padding:12px 28px;border-radius:10px;font-size:0.9rem;font-weight:600;box-shadow:0 4px 16px rgba(28,18,8,0.12);">
+  <i class="fa fa-check-circle mr-2"></i> Feedback sent successfully!
+</div>
+<script>setTimeout(function(){ var b=document.getElementById('success-banner'); if(b) b.remove(); }, 3000);</script>
 {% endif %}
 
-	<section class="logins py-5">
-		<div class="container py-xl-5 py-lg-3">
-			<div class="title-section mb-md-5 mb-4">
-				<h6 class="w3ls-title-sub"></h6>
-				<br><br>
-				<h3 class="w3ls-title text-uppercase text-dark font-weight-bold">Send Feedback</h3>
-			</div><hr/>
-			<div class="login px-sm-12" style="width:100%">
-				<form action="" method="post" enctype="multipart/form-data">
-					{% csrf_token %}
-					<div class="form-group row">
-						<div class="col-md-12">
-						<label>Username</label>
-						<input type="text" class="form-control" name="uname" value="{{request.user.username}}" required="" readonly>
-						</div>
-					</div>
-					<div class="form-group row">
-						<div class="col-md-12">
-						<label>Write Message</label>
-						<textarea class="form-control" name="msg" placeholder="Write Messages" required="">
-                        </textarea>
-                        </div>
-					</div>
-					<button type="submit" class="btn submit mt-4" style="background-color: #726f6e;">Send Feedback</button>
-				</form>
-			</div>
-		</div>
-	</section>
+<style>
+  .sf-shell { max-width:520px; margin:56px auto; padding:0 20px 56px; }
+  .sf-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; overflow:hidden; box-shadow:0 2px 14px rgba(28,18,8,0.08); }
+  .sf-card-head { background:linear-gradient(135deg,#1c1208,#5c3d2e); padding:1.25rem 1.5rem; display:flex; align-items:center; gap:8px; }
+  .sf-card-head h3 { margin:0; color:#faf7f0; font-size:1.1rem; font-weight:600; }
+  .sf-card-body { padding:1.75rem; }
+  .sf-field { margin-bottom:1.25rem; }
+  .sf-field label { display:block; font-size:0.8rem; font-weight:600; color:#5c4a3a; margin-bottom:5px; }
+  .sf-field input, .sf-field textarea { width:100%; padding:9px 12px; border:1.5px solid #d9cbba; border-radius:8px; background:#faf7f0; color:#1c1208; font-size:0.9rem; outline:none; box-sizing:border-box; }
+  .sf-field input:focus, .sf-field textarea:focus { border-color:#5c3d2e; background:#fffdf9; box-shadow:0 0 0 3px rgba(92,61,46,0.1); }
+  .sf-field textarea { min-height:130px; resize:vertical; }
+  .sf-actions { display:flex; gap:10px; flex-wrap:wrap; }
+  .sf-btn-primary { flex:1; padding:10px; border-radius:8px; background:linear-gradient(135deg,#3d2619,#5c3d2e); color:#faf7f0; font-size:0.9rem; font-weight:600; border:none; cursor:pointer; }
+  .sf-btn-primary:hover { opacity:0.88; }
+  .sf-btn-back { display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:8px;border:1.5px solid #e8ddd0;background:#fffdf9;color:#5c4a3a;font-size:0.875rem;text-decoration:none; }
+  .sf-btn-back:hover { background:#f5f0e4;border-color:#9e7c66;color:#3d2619;text-decoration:none; }
+</style>
+
+<div class="sf-shell">
+  <div class="sf-card">
+    <div class="sf-card-head">
+      <i class="fa fa-comment-alt" style="color:#e8c9a0;"></i>
+      <h3>Send Feedback</h3>
+    </div>
+    <div class="sf-card-body">
+      <form action="" method="post">
+        {% csrf_token %}
+        <div class="sf-field">
+          <label>Username</label>
+          <input type="text" name="uname" value="{{ request.user.username }}" readonly>
+        </div>
+        <div class="sf-field">
+          <label>Your Message</label>
+          <textarea name="msg" placeholder="Share your thoughts, suggestions, or concerns..." required></textarea>
+        </div>
+        <div class="sf-actions">
+          <a href="{% url 'patient_home' %}" class="sf-btn-back"><i class="fa fa-arrow-left"></i> Back</a>
+          <button type="submit" class="sf-btn-primary"><i class="fa fa-paper-plane mr-1"></i> Send Feedback</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

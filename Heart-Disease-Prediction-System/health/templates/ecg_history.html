@@ -2,75 +2,112 @@
 {% load static %}
 
 {% block body %}
-<div class="container mt-5">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h3 class="mb-0"><i class="fas fa-history"></i> ECG Analysis History</h3>
-        </div>
-        <div class="card-body">
-            
-            {% if ecg_records %}
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>Date</th>
-                            <th>ECG Image</th>
-                            <th>Result</th>
-                            <th>Confidence</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for record in ecg_records %}
-                        <tr>
-                            <td>{{ record.created|date:"M d, Y H:i" }}</td>
-                            <td>
-                                <img src="{{ record.ecg_image.url }}" alt="ECG" style="max-width: 100px; max-height: 60px;" class="img-thumbnail">
-                            </td>
-                            <td>
-                                <span class="badge {% if record.prediction_code == 2 %}badge-success{% elif record.prediction_code == 1 %}badge-danger{% else %}badge-warning{% endif %}">
-                                    {{ record.prediction_label }}
-                                </span>
-                            </td>
-                            <td>
-                                {% if record.confidence %}
-                                {{ record.confidence|floatformat:1 }}%
-                                {% else %}
-                                N/A
-                                {% endif %}
-                            </td>
-                            <td>
-                                <a href="{% url 'ecg_result' record.id %}" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-eye"></i> View Details
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="alert alert-info text-center">
-                <h5><i class="fas fa-info-circle"></i> No ECG Records Found</h5>
-                <p>You haven't uploaded any ECG images yet.</p>
-                <a href="{% url 'upload_ecg' %}" class="btn btn-primary">
-                    <i class="fas fa-upload"></i> Upload Your First ECG
-                </a>
-            </div>
-            {% endif %}
-            
-            <hr>
-            
-            <div class="text-center">
-                <a href="{% url 'upload_ecg' %}" class="btn btn-primary">
-                    <i class="fas fa-upload"></i> Upload New ECG
-                </a>
-                <a href="{% url 'patient_home' %}" class="btn btn-outline-primary">
-                    <i class="fas fa-home"></i> Back to Dashboard
-                </a>
-            </div>
-        </div>
+<style>
+  .hist-shell { max-width: 960px; margin: 48px auto; padding: 0 20px 48px; }
+  .hist-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; box-shadow:0 4px 20px rgba(28,18,8,0.09); overflow:hidden; }
+  .hist-card-header { background:linear-gradient(135deg,#1c1208 0%,#5c3d2e 100%); padding:1.25rem 1.75rem; display:flex; align-items:center; gap:0.75rem; }
+  .hist-card-header h3 { margin:0; color:#faf7f0; font-size:1.15rem; font-weight:600; }
+  .hist-card-body { padding:1.75rem; }
+
+  .hist-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
+  .hist-table thead tr { background:#f5f0e4; }
+  .hist-table thead th { padding:0.85rem 1rem; text-align:left; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#8a7060; border-bottom:1px solid #e8ddd0; }
+  .hist-table tbody tr { border-bottom:1px solid #f0ebe0; transition:background 0.15s; }
+  .hist-table tbody tr:last-child { border-bottom:none; }
+  .hist-table tbody tr:hover { background:#faf7f0; }
+  .hist-table tbody td { padding:0.9rem 1rem; color:#5c4a3a; vertical-align:middle; }
+
+  .ecg-thumb { width:90px; height:54px; object-fit:cover; border-radius:6px; border:1px solid #e8ddd0; }
+
+  /* Badges */
+  .hist-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:99px; font-size:0.75rem; font-weight:600; }
+  .badge-normal  { background:#e8f5e9; color:#2e5e35; border:1px solid #b8d4ba; }
+  .badge-mi      { background:#fdf0ee; color:#8b2e2e; border:1px solid #e8b4a8; }
+  .badge-warning { background:#fef8ec; color:#7a5a1a; border:1px solid #e8d9a0; }
+
+  /* Buttons */
+  .hist-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 14px; border-radius:7px; font-size:0.8rem; font-weight:500; text-decoration:none; transition:background 0.15s, border-color 0.15s; }
+  .hist-btn-view { background:#5c3d2e; color:#faf7f0; border:1px solid #5c3d2e; }
+  .hist-btn-view:hover { background:#3d2619; border-color:#3d2619; color:#faf7f0; text-decoration:none; }
+  .hist-btn-outline { background:#fffdf9; color:#5c4a3a; border:1px solid #e8ddd0; }
+  .hist-btn-outline:hover { background:#f5f0e4; border-color:#9e7c66; color:#3d2619; text-decoration:none; }
+  .hist-btn-primary { background:linear-gradient(135deg,#3d2619 0%,#5c3d2e 100%); color:#faf7f0; border:none; }
+  .hist-btn-primary:hover { opacity:0.88; color:#faf7f0; text-decoration:none; }
+
+  .hist-sep { border:none; border-top:1px solid #e8ddd0; margin:1.5rem 0; }
+  .hist-actions { display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap; }
+
+  .hist-empty { text-align:center; padding:3rem; background:#faf7f0; border:1px dashed #d9cbba; border-radius:12px; color:#8a7060; }
+  .hist-empty h5 { color:#3d2619; font-weight:700; margin-bottom:0.5rem; }
+</style>
+
+<div class="hist-shell">
+  <div class="hist-card">
+    <div class="hist-card-header">
+      <i class="fas fa-history" style="color:#e8c9a0; font-size:1.3rem;"></i>
+      <h3>ECG Analysis History</h3>
     </div>
+    <div class="hist-card-body">
+
+      {% if ecg_records %}
+      <div style="overflow-x:auto;">
+        <table class="hist-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>ECG Image</th>
+              <th>Result</th>
+              <th>Confidence</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in ecg_records %}
+            <tr>
+              <td style="color:#1c1208; font-weight:500;">
+                {{ record.created|date:"M d, Y" }}<br>
+                <small style="color:#b8a898;">{{ record.created|date:"H:i" }}</small>
+              </td>
+              <td>
+                <img src="{{ record.ecg_image.url }}" alt="ECG" class="ecg-thumb">
+              </td>
+              <td>
+                {% if record.prediction_code == 2 %}
+                  <span class="hist-badge badge-normal"><i class="fas fa-check-circle"></i>{{ record.prediction_label }}</span>
+                {% elif record.prediction_code == 1 %}
+                  <span class="hist-badge badge-mi"><i class="fas fa-exclamation-triangle"></i>{{ record.prediction_label }}</span>
+                {% else %}
+                  <span class="hist-badge badge-warning"><i class="fas fa-exclamation-circle"></i>{{ record.prediction_label }}</span>
+                {% endif %}
+              </td>
+              <td style="font-weight:600; color:#3d2619;">
+                {% if record.confidence %}{{ record.confidence|floatformat:1 }}%{% else %}<span style="color:#b8a898;">N/A</span>{% endif %}
+              </td>
+              <td>
+                <a href="{% url 'ecg_result' record.id %}" class="hist-btn hist-btn-view"><i class="fas fa-eye"></i> View</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="hist-empty">
+        <i class="fas fa-file-medical" style="font-size:2.5rem; color:#d9cbba; margin-bottom:1rem; display:block;"></i>
+        <h5>No ECG Records Yet</h5>
+        <p style="margin-bottom:1.25rem;">You haven't uploaded any ECG images yet.</p>
+        <a href="{% url 'upload_ecg' %}" class="hist-btn hist-btn-primary"><i class="fas fa-upload"></i> Upload Your First ECG</a>
+      </div>
+      {% endif %}
+
+      <hr class="hist-sep">
+
+      <div class="hist-actions">
+        <a href="{% url 'upload_ecg' %}" class="hist-btn hist-btn-primary"><i class="fas fa-upload"></i> Upload New ECG</a>
+        <a href="{% url 'patient_home' %}" class="hist-btn hist-btn-outline"><i class="fas fa-home"></i> Dashboard</a>
+      </div>
+
+    </div>
+  </div>
 </div>
 {% endblock %}

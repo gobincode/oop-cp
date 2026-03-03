@@ -1,64 +1,94 @@
 {% extends 'index.html' %}
 {% load static %}
 {% block body %}
+<style>
+  .at-shell { max-width:1200px; margin:48px auto; padding:0 20px 56px; }
+  .at-header { margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  .at-header h1 { font-size:1.5rem; font-weight:700; color:#1c1208; margin:0; }
+  .at-header p  { color:#8a7060; font-size:0.875rem; margin:4px 0 0; }
+  .at-sep { border:none; border-top:1px solid #e8ddd0; margin:0 0 24px; }
+  .at-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; overflow:hidden; box-shadow:0 2px 12px rgba(28,18,8,0.07); }
+  .at-card-head { background:linear-gradient(135deg,#1c1208,#5c3d2e); padding:1rem 1.5rem; display:flex; align-items:center; gap:8px; }
+  .at-card-head h3 { margin:0; color:#faf7f0; font-size:1.05rem; font-weight:600; }
+  .at-table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+  .at-table thead tr { background:#f5f0e4; }
+  .at-table thead th { padding:0.8rem 1rem; text-align:left; font-size:0.73rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#8a7060; border-bottom:1px solid #e8ddd0; }
+  .at-table tbody tr { border-bottom:1px solid #f0ebe0; transition:background 0.12s; }
+  .at-table tbody tr:last-child { border-bottom:none; }
+  .at-table tbody tr:hover { background:#faf7f0; }
+  .at-table tbody td { padding:0.8rem 1rem; color:#5c4a3a; vertical-align:middle; }
+  .at-avatar { width:56px; height:56px; object-fit:cover; border-radius:8px; border:1px solid #e8ddd0; }
+  .pill-auth   { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:0.73rem;font-weight:600;background:#eaf0ea;color:#2e5e35;border:1px solid #b8d4ba; }
+  .pill-unauth { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:0.73rem;font-weight:600;background:#fdf0ee;color:#8b2e2e;border:1px solid #e8b4a8; }
+  .at-btn { display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:7px;font-size:0.78rem;font-weight:500;text-decoration:none;border:1px solid transparent;cursor:pointer; }
+  .at-btn-approve { background:#eaf0ea;color:#2e5e35;border-color:#b8d4ba; }
+  .at-btn-approve:hover { background:#c8e6ca;text-decoration:none;color:#1e4024; }
+  .at-btn-cancel  { background:#fdf0ee;color:#8b2e2e;border-color:#e8b4a8; }
+  .at-btn-cancel:hover  { background:#f5dbd8;text-decoration:none;color:#6b1e1e; }
+  .at-btn-edit  { background:#f5f0e4;color:#5c4a3a;border-color:#d9cbba; }
+  .at-btn-edit:hover { background:#ede5d4;text-decoration:none;color:#3d2619; }
+  .at-btn-del   { background:#fdf0ee;color:#8b2e2e;border-color:#e8b4a8; }
+  .at-btn-del:hover  { background:#f5dbd8;text-decoration:none;color:#6b1e1e; }
+  .at-btn-add { display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:8px;background:linear-gradient(135deg,#3d2619,#5c3d2e);color:#faf7f0;font-size:0.875rem;font-weight:600;text-decoration:none; }
+  .at-btn-add:hover { opacity:0.88;color:#faf7f0;text-decoration:none; }
+  .at-back { display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;border:1.5px solid #e8ddd0;background:#fffdf9;color:#5c4a3a;font-size:0.875rem;text-decoration:none; }
+  .at-back:hover { background:#f5f0e4;border-color:#9e7c66;color:#3d2619;text-decoration:none; }
+</style>
 
-<div class="container-fluid" style="width:90%;margin-top:8%">
-                    <div class="container-fluid">
-                        <h1 align="center"class="w3ls-title text-uppercase text-dark font-weight-bold">Doctor Records</h1><br>
-                         </div><hr>
-                                <table id="example" class="display" style="width:100%">
-                                  <thead>
-                                    <tr>
-                                      <th>#</th>
-                                      <th>Full Name</th>
-                                      <th>Image</th>
-                                      <th>Email</th>
-                                      <th>Contact</th>
-                                      <th>Address</th>
-                                      <th>Category</th>
-                                      <th>Status</th>
-                                      <th>Assign</th>
-                                      <th>Action</th>
+<div class="at-shell">
+  <div class="at-header">
+    <div>
+      <h1><i class="fa fa-user-md mr-2" style="color:#5c3d2e;"></i>Doctor Records</h1>
+      <p>Manage registered doctors and their approval status.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a href="{% url 'admin_home' %}" class="at-back"><i class="fa fa-arrow-left"></i> Dashboard</a>
+      <a href="{% url 'add_doctor' %}" class="at-btn-add"><i class="fa fa-plus"></i> Add Doctor</a>
+    </div>
+  </div>
+  <hr class="at-sep">
 
-                                  </tr>
-                              </thead>
-                              <tbody>
-                              {% for i in doc %}
-                                <tr>
-                                  <td>{{forloop.counter}}</td>
-                                  <td>{{i.user.first_name}} {{i.user.last_name}}</td>
-                                  <td><img src="{{i.image.url}}" style="width:80px;height:80px"></td>
-                                  <td>{{i.user.email}}</td>
-                                  <td>{{i.contact}}</td>
-                                  <td>{{i.address}}</td>
-                                  <td>{{i.category}}</td>
-                                  <td>
-                                      {% if i.status == 1 %}
-                                      <b>Authorized</b>
-                                  {% else %}
-                                      <b>Unauthorized</b>
-                                      {% endif %}
-                                  </td>
-                                    <td>{% if i.status == 1 %}
-                                        <a href="{% url 'assign_status' i.id %}" onclick="return confirm('Do you want to withdraw approval to doctor : {{i.user.first_name}}?')"><button class="btn btn-danger">Cancel</button></a>
-                                        {% else %}
-                                        <a href="{% url 'assign_status' i.id %}" onclick="return confirm('Do you want to give approve to doctor : {{i.user.first_name}}?')"><button class="btn btn-success">Assign</button></a>
-                                        {% endif %}
-                                    </td>
-
-                                    <td style="width:150px">
-
-                                      <a href="{% url 'change_doctor' i.id %}" ><button class="btn btn-primary"><i class="fa fa-edit"></i></button></a>
-                                      <a href="{% url 'delete_doctor' i.id %}" ><button class="btn btn-danger" onclick="return confirm('Are you sure?')"><i class="fa fa-trash-o"></i></button></a></td>
-                              </tr>
-                              {% endfor %}
-                          </tbody>
-                      </table>
-                  </div>
-{% for i in messages %}
-<script>
-alert('hii');
-    alert({{i}});
-</script>
-{% endfor %}
+  <div class="at-card">
+    <div class="at-card-head"><i class="fa fa-user-md" style="color:#e8c9a0;"></i><h3>All Doctors</h3></div>
+    <div style="overflow-x:auto;">
+      <table class="at-table" id="example">
+        <thead><tr>
+          <th>#</th><th>Image</th><th>Full Name</th><th>Email</th><th>Contact</th><th>Address</th><th>Category</th><th>Status</th><th>Approve</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+        {% for i in doc %}
+        <tr>
+          <td style="color:#b8a898;">{{ forloop.counter }}</td>
+          <td><img src="{{ i.image.url }}" class="at-avatar" alt="Dr."></td>
+          <td style="font-weight:600;color:#1c1208;">{{ i.user.first_name }} {{ i.user.last_name }}</td>
+          <td><a href="mailto:{{ i.user.email }}" style="color:#5c3d2e;">{{ i.user.email }}</a></td>
+          <td>{{ i.contact }}</td>
+          <td>{{ i.address }}</td>
+          <td>{{ i.category }}</td>
+          <td>
+            {% if i.status == 1 %}<span class="pill-auth"><i class="fa fa-check-circle"></i> Authorized</span>
+            {% else %}<span class="pill-unauth"><i class="fa fa-times-circle"></i> Unauthorized</span>{% endif %}
+          </td>
+          <td>
+            {% if i.status == 1 %}
+              <a href="{% url 'assign_status' i.id %}" class="at-btn at-btn-cancel" onclick="return confirm('Withdraw approval for Dr. {{ i.user.first_name }}?')"><i class="fa fa-ban"></i> Revoke</a>
+            {% else %}
+              <a href="{% url 'assign_status' i.id %}" class="at-btn at-btn-approve" onclick="return confirm('Approve Dr. {{ i.user.first_name }}?')"><i class="fa fa-check"></i> Approve</a>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <a href="{% url 'change_doctor' i.id %}" class="at-btn at-btn-edit"><i class="fa fa-edit"></i></a>
+              <a href="{% url 'delete_doctor' i.id %}" class="at-btn at-btn-del" onclick="return confirm('Delete Dr. {{ i.user.first_name }}?')"><i class="fa fa-trash"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="10" style="text-align:center;color:#b8a898;padding:2rem;">No doctors registered yet.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}

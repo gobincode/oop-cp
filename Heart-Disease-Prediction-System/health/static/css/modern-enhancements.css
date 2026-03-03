@@ -1,52 +1,52 @@
-/* Modern Enhancements - Classy Light Theme */
+/* Modern Enhancements - Cream & Dark Espresso Theme */
 
 :root {
-    /* Primary Colors - Professional Indigo/Purple Palette */
-    --primary-color: #6366f1;
-    --primary-dark: #4f46e5;
-    --primary-light: #818cf8;
-    --secondary-color: #8b5cf6;
-    --accent-color: #10b981;
-    --accent-dark: #059669;
+    /* Primary Colors - Warm Cream & Dark Espresso/Walnut */
+    --primary-color: #5c3d2e;
+    --primary-dark: #3d2619;
+    --primary-light: #9e7c66;
+    --secondary-color: #7a5a46;
+    --accent-color: #6b8c6e;
+    --accent-dark: #4a6b4d;
 
-    /* shadcn-inspired design tokens */
-    --background: 210 20% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 45%;
-    --accent: 214 95% 58%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 217 91% 60%;
+    /* shadcn-inspired design tokens (warm cream tones) */
+    --background: 38 40% 96%;
+    --foreground: 24 47% 11%;
+    --card: 38 60% 99%;
+    --card-foreground: 24 47% 11%;
+    --popover: 38 60% 99%;
+    --popover-foreground: 24 47% 11%;
+    --muted: 34 30% 92%;
+    --muted-foreground: 28 16% 42%;
+    --accent: 24 45% 40%;
+    --accent-foreground: 38 60% 99%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 38 60% 99%;
+    --border: 34 28% 85%;
+    --input: 34 28% 85%;
+    --ring: 24 45% 40%;
     --radius: 0.875rem;
 
     /* Background Colors */
-    --bg-primary: #f8fafc;
-    --bg-secondary: #eff4fb;
-    --bg-white: #ffffff;
-    --bg-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --bg-primary: #faf7f0;
+    --bg-secondary: #f5f0e4;
+    --bg-white: #fffdf9;
+    --bg-gradient: linear-gradient(135deg, #3d2619 0%, #5c3d2e 100%);
 
     /* Text Colors */
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #64748b;
-    --text-light: #94a3b8;
+    --text-primary: #1c1208;
+    --text-secondary: #5c4a3a;
+    --text-muted: #8a7060;
+    --text-light: #b8a898;
 
     /* Border & Shadow */
-    --border-color: #e2e8f0;
-    --border-light: #f1f5f9;
-    --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
-    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
-    --shadow-md: 0 10px 20px rgba(15, 23, 42, 0.08);
-    --shadow-lg: 0 20px 35px rgba(15, 23, 42, 0.12);
-    --shadow-xl: 0 30px 50px rgba(15, 23, 42, 0.14);
+    --border-color: #e8ddd0;
+    --border-light: #f0ebe0;
+    --shadow-xs: 0 1px 2px 0 rgba(28, 18, 8, 0.05);
+    --shadow-sm: 0 1px 3px rgba(28, 18, 8, 0.09);
+    --shadow-md: 0 10px 20px rgba(28, 18, 8, 0.09);
+    --shadow-lg: 0 20px 35px rgba(28, 18, 8, 0.13);
+    --shadow-xl: 0 30px 50px rgba(28, 18, 8, 0.15);
 
     /* Spacing */
     --radius-sm: 0.5rem;
@@ -62,6 +62,7 @@ body {
     font-family: 'Inter', 'Segoe UI', 'Quicksand', sans-serif;
     line-height: 1.6;
     min-height: 100vh;
+    background-color: #faf7f0;
 }
 
 .bg-background {
@@ -144,7 +145,7 @@ nav a {
 
 nav a:hover, 
 .menu li a.active {
-    color: #fbbf24 !important;
+    color: #e8c9a0 !important;
     transform: translateY(-2px);
 }
 
@@ -155,7 +156,7 @@ nav a::after {
     left: 0;
     width: 0;
     height: 2px;
-    background: #fbbf24;
+    background: #e8c9a0;
     transition: width 0.3s ease;
 }
 
@@ -263,8 +264,8 @@ table.display {
 }
 
 table thead {
-    background: var(--bg-gradient);
-    color: #ffffff;
+    background: linear-gradient(135deg, #3d2619 0%, #5c3d2e 100%);
+    color: #faf7f0;
 }
 
 table thead th {
@@ -281,7 +282,7 @@ table tbody tr {
 }
 
 table tbody tr:hover {
-    background: var(--bg-secondary);
+    background: #f5f0e4;
     transform: scale(1.01);
 }
 
@@ -324,18 +325,27 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .alert-success {
-    background: #d1fae5;
-    color: #065f46;
+    background: #e8f5e9;
+    color: #2e5e35;
+    border-left: 4px solid #6b8c6e;
 }
 
 .alert-danger {
-    background: #fee2e2;
-    color: #991b1b;
+    background: #fdf0ee;
+    color: #8b2e2e;
+    border-left: 4px solid #c0654f;
 }
 
 .alert-info {
-    background: #dbeafe;
-    color: #1e40af;
+    background: #f5f0e4;
+    color: #5c4a3a;
+    border-left: 4px solid #9e7c66;
+}
+
+.alert-warning {
+    background: #fef8ec;
+    color: #7a5a1a;
+    border-left: 4px solid #c4a44a;
 }
 
 /* Badge Enhancements */
@@ -446,8 +456,8 @@ html {
 
 /* DataTables Button Enhancements */
 .dt-button {
-    background: var(--primary-color) !important;
-    color: white !important;
+    background: #5c3d2e !important;
+    color: #faf7f0 !important;
     border: none !important;
     border-radius: var(--radius-sm) !important;
     padding: 0.5rem 1rem !important;
@@ -456,25 +466,25 @@ html {
 }
 
 .dt-button:hover {
-    background: var(--primary-dark) !important;
+    background: #3d2619 !important;
     transform: translateY(-2px);
 }
 
 /* Health Status Indicators */
 .health-positive {
-    color: var(--accent-color);
+    color: #4a6b4d;
     font-weight: 700;
     padding: 0.5rem 1rem;
-    background: rgba(16, 185, 129, 0.1);
+    background: rgba(107, 140, 110, 0.12);
     border-radius: var(--radius-md);
     display: inline-block;
 }
 
 .health-warning {
-    color: #ef4444;
+    color: #8b2e2e;
     font-weight: 700;
     padding: 0.5rem 1rem;
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(192, 101, 79, 0.12);
     border-radius: var(--radius-md);
     display: inline-block;
 }
@@ -521,7 +531,7 @@ a:hover {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(92, 61, 46, 0.1);
     color: var(--primary-dark);
     padding: 0.5rem 1.15rem;
     border-radius: 999px;
@@ -529,6 +539,7 @@ a:hover {
     letter-spacing: 0.02em;
     text-transform: uppercase;
     font-size: 0.75rem;
+    border: 1px solid rgba(92, 61, 46, 0.2);
 }
 
 .section-heading {
@@ -611,13 +622,13 @@ a:hover {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: rgba(99, 102, 241, 0.12);
+    background: rgba(92, 61, 46, 0.1);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
     color: var(--primary-dark);
-    box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.25);
+    box-shadow: inset 0 0 0 1px rgba(92, 61, 46, 0.25);
 }
 
 .doctor-meta p,
@@ -638,8 +649,8 @@ a:hover {
 .empty-state {
     padding: 3rem;
     border-radius: var(--radius-xl);
-    background: rgba(99, 102, 241, 0.06);
-    border: 1px dashed rgba(99, 102, 241, 0.3);
+    background: rgba(92, 61, 46, 0.05);
+    border: 1px dashed rgba(92, 61, 46, 0.25);
 }
 
 .status-badge {
@@ -708,8 +719,8 @@ a:hover {
 .appointments-empty {
     padding: 3rem;
     border-radius: var(--radius-xl);
-    border: 1px dashed rgba(99, 102, 241, 0.3);
-    background: rgba(255, 255, 255, 0.8);
+    border: 1px dashed rgba(92, 61, 46, 0.3);
+    background: rgba(250, 247, 240, 0.8);
 }
 
 .appointments-legend ul {
@@ -758,20 +769,21 @@ a:hover {
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    background: rgba(16, 185, 129, 0.12);
-    color: #047857;
+    background: rgba(107, 140, 110, 0.12);
+    color: #4a6b4d;
     display: grid;
     place-items: center;
     font-size: 1.75rem;
-    box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.3);
+    box-shadow: inset 0 0 0 1px rgba(107, 140, 110, 0.3);
     margin-bottom: 1rem;
 }
 
 .booking-note {
-    background: rgba(99, 102, 241, 0.08);
+    background: rgba(92, 61, 46, 0.07);
     border-radius: var(--radius-lg);
     padding: 1rem 1.25rem;
     color: var(--text-secondary);
+    border-left: 3px solid #9e7c66;
 }
 
 .booking-note i {

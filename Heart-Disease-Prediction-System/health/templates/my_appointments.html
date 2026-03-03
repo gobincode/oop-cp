@@ -2,6 +2,23 @@
 {% load static %}
 
 {% block body %}
+
+<!-- shadcn Alert-Dialog overlay -->
+<div id="cancelDialog" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(28,18,8,0.45); align-items:center; justify-content:center;">
+    <div style="background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; padding:2rem; max-width:420px; width:90%; box-shadow:0 20px 50px rgba(28,18,8,0.2);">
+        <h5 style="color:#1c1208; font-weight:700; margin:0 0 0.5rem;">Cancel Appointment</h5>
+        <p style="color:#8a7060; font-size:0.9rem; margin:0 0 1.5rem;">Are you sure you want to cancel this appointment? This action cannot be undone.</p>
+        <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
+            <button onclick="closeCancelDialog()" style="padding:8px 18px; border-radius:8px; border:1px solid #e8ddd0; background:#faf7f0; color:#5c4a3a; font-size:0.875rem; font-weight:500; cursor:pointer;">
+                Keep Appointment
+            </button>
+            <a id="cancelConfirmLink" href="#" style="padding:8px 18px; border-radius:8px; background:#8b2e2e; color:#faf7f0; font-size:0.875rem; font-weight:600; text-decoration:none; border:none; cursor:pointer;">
+                Yes, Cancel
+            </a>
+        </div>
+    </div>
+</div>
+
 <div class="page-shell">
     <div class="container">
         <section class="section-intro text-center mb-5 fade-in">
@@ -11,6 +28,18 @@
         </section>
 
         {% if appointments %}
+        <!-- shadcn Tabs -->
+        <div style="display:flex; gap:4px; background:#f5f0e4; border-radius:10px; padding:4px; margin-bottom:1.5rem; width:fit-content;">
+            <button onclick="filterTab('all', this)"      class="appt-tab appt-tab-active" id="tab-all">All</button>
+            <button onclick="filterTab('upcoming', this)" class="appt-tab" id="tab-upcoming">Upcoming</button>
+            <button onclick="filterTab('past', this)"     class="appt-tab" id="tab-past">Past</button>
+        </div>
+        <style>
+            .appt-tab { padding:6px 18px; border-radius:7px; border:none; background:transparent; font-size:0.85rem; font-weight:500; color:#8a7060; cursor:pointer; transition:all 0.15s; }
+            .appt-tab-active { background:#fffdf9 !important; color:#3d2619 !important; font-weight:600; box-shadow:0 1px 4px rgba(28,18,8,0.1); }
+            .appt-tab:hover:not(.appt-tab-active) { color:#5c3d2e; }
+        </style>
+
         <div class="appointments-card fade-in">
             <div class="table-responsive">
                 <table class="table appointments-table">
@@ -26,7 +55,7 @@
                     </thead>
                     <tbody>
                         {% for appointment in appointments %}
-                        <tr>
+                        <tr data-date="{{ appointment.appointment_date|date:'Y-m-d' }}" class="appt-row">
                             <td>
                                 <strong>{{ appointment.appointment_date|date:"M d, Y" }}</strong><br>
                                 <small class="text-muted">{{ appointment.appointment_time|time:"h:i A" }}</small>
@@ -59,11 +88,11 @@
                             </td>
                             <td>
                                 {% if appointment.status == 'pending' or appointment.status == 'confirmed' %}
-                                <a href="{% url 'cancel_appointment' appointment.id %}"
-                                   class="btn btn-sm btn-outline-danger"
-                                   onclick="return confirm('Are you sure you want to cancel this appointment?')">
-                                    <i class="fas fa-times"></i> Cancel
-                                </a>
+                                <button type="button"
+                                    onclick="openCancelDialog('{% url 'cancel_appointment' appointment.id %}')"
+                                    style="padding:5px 14px; border-radius:7px; border:1px solid #e8b4a8; background:#fdf0ee; color:#8b2e2e; font-size:0.8rem; font-weight:500; cursor:pointer;">
+                                    <i class="fas fa-times mr-1"></i>Cancel
+                                </button>
                                 {% else %}
                                 <span class="text-muted">—</span>
                                 {% endif %}
@@ -94,6 +123,57 @@
         </div>
         {% endif %}
 
+        {% if ai_appointments %}
+        <section class="section-intro text-left mt-5 mb-3 fade-in">
+            <span class="section-badge"><i class="fas fa-robot"></i> AI booked</span>
+            <h4 class="section-heading" style="font-size:1.4rem;">AI-Called Appointments</h4>
+            <p class="section-subtitle" style="font-size:0.9rem;">These appointments were booked automatically by the AI calling agent.</p>
+        </section>
+        <div class="appointments-card fade-in">
+            <div class="table-responsive">
+                <table class="table appointments-table">
+                    <thead>
+                        <tr>
+                            <th>Date &amp; Time</th>
+                            <th>Hospital</th>
+                            <th>Doctor / Dept</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appt in ai_appointments %}
+                        <tr>
+                            <td>
+                                {% if appt.appointment_date %}
+                                <strong>{{ appt.appointment_date|date:"M d, Y" }}</strong><br>
+                                <small class="text-muted">{{ appt.appointment_time|time:"h:i A" }}</small>
+                                {% else %}
+                                <strong>{{ appt.appointment_datetime_str|default:"To be confirmed" }}</strong>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ appt.hospital_name }}</strong><br>
+                                {% if appt.hospital_phone %}<small class="text-muted"><i class="fas fa-phone mr-1"></i>{{ appt.hospital_phone }}</small>{% endif %}
+                                {% if appt.hospital_address %}<br><small class="text-muted"><i class="fas fa-map-marker-alt mr-1"></i>{{ appt.hospital_address|truncatechars:40 }}</small>{% endif %}
+                            </td>
+                            <td>
+                                {% if appt.doctor_name %}<strong>{{ appt.doctor_name }}</strong><br>{% endif %}
+                                {% if appt.department %}<small class="text-muted text-uppercase">{{ appt.department }}</small>{% endif %}
+                                {% if not appt.doctor_name and not appt.department %}<span class="text-muted">—</span>{% endif %}
+                            </td>
+                            <td>
+                                <span class="status-badge status-confirmed"><i class="fas fa-robot"></i> {{ appt.status|capfirst }}</span>
+                            </td>
+                            <td>{{ appt.reason|truncatewords:10|default:"Cardiac consultation" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="card-actions justify-content-center mt-5">
             <a href="{% url 'find_doctors' %}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Book New Appointment
@@ -104,4 +184,30 @@
         </div>
     </div>
 </div>
+<script>
+// Alert-Dialog
+function openCancelDialog(url) {
+    document.getElementById('cancelConfirmLink').href = url;
+    document.getElementById('cancelDialog').style.display = 'flex';
+}
+function closeCancelDialog() {
+    document.getElementById('cancelDialog').style.display = 'none';
+}
+document.getElementById('cancelDialog').addEventListener('click', function(e) {
+    if (e.target === this) closeCancelDialog();
+});
+
+// Tabs
+function filterTab(type, btn) {
+    document.querySelectorAll('.appt-tab').forEach(b => b.classList.remove('appt-tab-active'));
+    btn.classList.add('appt-tab-active');
+    const today = new Date().toISOString().split('T')[0];
+    document.querySelectorAll('.appt-row').forEach(row => {
+        const d = row.dataset.date;
+        if (type === 'all') row.style.display = '';
+        else if (type === 'upcoming') row.style.display = (d >= today) ? '' : 'none';
+        else if (type === 'past')     row.style.display = (d < today)  ? '' : 'none';
+    });
+}
+</script>
 {% endblock %}

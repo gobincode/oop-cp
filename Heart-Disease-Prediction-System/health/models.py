@@ -104,3 +104,69 @@ class Appointment(models.Model):
     
     class Meta:
         ordering = ['-appointment_date', '-appointment_time']
+
+
+class ChatSession(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='chat_sessions')
+    title = models.CharField(max_length=200, blank=True, default='New Chat')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f'{self.patient.user.username} - {self.title}'
+
+
+class ChatMessage(models.Model):
+    ROLE_CHOICES = [('user', 'User'), ('ai', 'AI')]
+    session = models.ForeignKey(ChatSession, on_delete=models.CASCADE, related_name='messages')
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'{self.role}: {self.content[:50]}'
+
+
+class AIBookedAppointment(models.Model):
+    """Appointments booked via AI calling agent"""
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    hospital_name = models.CharField(max_length=300)
+    hospital_phone = models.CharField(max_length=50, blank=True)
+    hospital_address = models.CharField(max_length=500, blank=True)
+    doctor_name = models.CharField(max_length=200, blank=True)
+    department = models.CharField(max_length=200, blank=True)
+    appointment_date = models.DateField(null=True, blank=True)
+    appointment_time = models.TimeField(null=True, blank=True)
+    appointment_datetime_str = models.CharField(max_length=300, blank=True)
+    reason = models.TextField(blank=True)
+    call_sid = models.CharField(max_length=100, blank=True, unique=True)
+    status = models.CharField(max_length=20, default='confirmed')
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created']
+
+    def __str__(self):
+        return f"{self.patient.user.username} - {self.hospital_name}"
+
+
+class MedicalDocument(models.Model):
+    FILE_TYPES = [('pdf', 'PDF'), ('image', 'Image')]
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='medical_documents')
+    file = models.FileField(upload_to='medical_docs/')
+    original_name = models.CharField(max_length=255)
+    file_type = models.CharField(max_length=10, choices=FILE_TYPES)
+    parsed_data = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.patient.user.username} — {self.original_name}'

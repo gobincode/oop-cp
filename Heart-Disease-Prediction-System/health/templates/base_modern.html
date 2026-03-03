@@ -16,106 +16,178 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .card-hover {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
+        body { font-family: 'Inter', sans-serif; background: #faf7f0; }
+        .gradient-bg { background: linear-gradient(135deg, #1c1208 0%, #3d2619 50%, #5c3d2e 100%); }
+        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(28,18,8,0.1); }
+
+        /* Nav link styles */
+        .nav-link { color: #5c4a3a; font-size: 0.875rem; font-weight: 500; padding: 0.5rem 0.75rem; border-radius: 6px; text-decoration: none; transition: background 0.15s, color 0.15s; }
+        .nav-link:hover { background: #f5f0e4; color: #3d2619; text-decoration: none; }
+        .nav-link-primary { background: #5c3d2e; color: #faf7f0 !important; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem; font-weight: 600; text-decoration: none; transition: background 0.15s; }
+        .nav-link-primary:hover { background: #3d2619; text-decoration: none; color: #faf7f0 !important; }
+        .nav-link-outline { border: 1.5px solid #e8ddd0; color: #5c4a3a; padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: background 0.15s, border-color 0.15s; }
+        .nav-link-outline:hover { background: #f5f0e4; border-color: #9e7c66; color: #3d2619; text-decoration: none; }
+
+        /* shadcn Dropdown-Menu */
+        .dd-trigger { display: flex; align-items: center; gap: 6px; cursor: pointer; background: none; border: none; color: #5c4a3a; font-size: 0.875rem; font-weight: 500; padding: 0.5rem 0.75rem; border-radius: 6px; transition: background 0.15s; }
+        .dd-trigger:hover { background: #f5f0e4; color: #3d2619; }
+        .dd-menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 180px; background: #fffdf9; border: 1px solid #e8ddd0; border-radius: 10px; box-shadow: 0 8px 24px rgba(28,18,8,0.12); padding: 4px; z-index: 200; display: none; }
+        .dd-menu.open { display: block; }
+        .dd-item { display: block; padding: 8px 12px; border-radius: 7px; font-size: 0.85rem; color: #3d2619; text-decoration: none; transition: background 0.12s; }
+        .dd-item:hover { background: #f5f0e4; text-decoration: none; color: #1c1208; }
+        .dd-item-danger { color: #8b2e2e; }
+        .dd-item-danger:hover { background: #fdf0ee; }
+        .dd-sep { border: none; border-top: 1px solid #e8ddd0; margin: 4px 0; }
+        .dd-wrapper { position: relative; }
+
+        /* Avatar */
+        .nav-avatar { width: 30px; height: 30px; border-radius: 50%; background: #f0ebe0; border: 1.5px solid #e8ddd0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; color: #9e7c66; }
+
+        /* shadcn Sheet (mobile drawer) */
+        #sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(28,18,8,0.4); z-index: 400; }
+        #sheet-overlay.open { display: block; }
+        #sheet { position: fixed; top: 0; right: -100%; width: 280px; height: 100vh; background: #fffdf9; border-left: 1px solid #e8ddd0; box-shadow: -8px 0 32px rgba(28,18,8,0.15); z-index: 500; transition: right 0.3s ease; padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+        #sheet.open { right: 0; }
+        .sheet-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e8ddd0; }
+        .sheet-title { font-weight: 700; font-size: 0.95rem; color: #1c1208; }
+        .sheet-close { background: none; border: none; font-size: 1.25rem; color: #8a7060; cursor: pointer; padding: 4px; line-height: 1; }
+        .sheet-link { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; color: #3d2619; text-decoration: none; transition: background 0.12s; }
+        .sheet-link:hover { background: #f5f0e4; text-decoration: none; color: #1c1208; }
+        .sheet-link-danger { color: #8b2e2e; }
+        .sheet-link-danger:hover { background: #fdf0ee; }
+        .sheet-sep { border: none; border-top: 1px solid #e8ddd0; margin: 6px 0; }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="h-full bg-gray-50">
+<body class="h-full" style="background:#faf7f0;">
+
+    <!-- shadcn Sheet overlay + drawer (mobile) -->
+    <div id="sheet-overlay" onclick="closeSheet()"></div>
+    <div id="sheet">
+        <div class="sheet-header">
+            <span class="sheet-title"><i class="fas fa-heartbeat mr-2" style="color:#9e7c66;"></i>Menu</span>
+            <button class="sheet-close" onclick="closeSheet()"><i class="fas fa-times"></i></button>
+        </div>
+        {% if request.user.is_staff %}
+            <a href="{% url 'admin_home' %}" class="sheet-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="/add_doctor" class="sheet-link"><i class="fas fa-user-plus"></i> Add Doctor</a>
+            <a href="/view_doctor" class="sheet-link"><i class="fas fa-user-md"></i> Doctors</a>
+            <a href="/view_patient" class="sheet-link"><i class="fas fa-users"></i> Patients</a>
+            <a href="/view_feedback" class="sheet-link"><i class="fas fa-comments"></i> Feedback</a>
+            <hr class="sheet-sep">
+            <a href="{% url 'change_password' %}" class="sheet-link"><i class="fas fa-key"></i> Change Password</a>
+            <a href="{% url 'logout' %}" class="sheet-link sheet-link-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        {% elif request.user.patient_set.all.0 %}
+            <a href="{% url 'patient_home' %}" class="sheet-link"><i class="fas fa-home"></i> Home</a>
+            <a href="/add_heartdetail" class="sheet-link"><i class="fas fa-heartbeat"></i> Predict</a>
+            <a href="/upload_ecg" class="sheet-link"><i class="fas fa-wave-square"></i> ECG</a>
+            <a href="{% url 'medical_chat' %}" class="sheet-link"><i class="fas fa-robot"></i> AI Chat</a>
+            <a href="/find_doctors" class="sheet-link"><i class="fas fa-stethoscope"></i> Doctors</a>
+            <a href="/my_appointments" class="sheet-link"><i class="fas fa-calendar"></i> Appointments</a>
+            <a href="/view_search_pat" class="sheet-link"><i class="fas fa-history"></i> History</a>
+            <a href="/profile_doctor" class="sheet-link"><i class="fas fa-user"></i> My Profile</a>
+            <hr class="sheet-sep">
+            <a href="{% url 'change_password' %}" class="sheet-link"><i class="fas fa-key"></i> Change Password</a>
+            <a href="{% url 'logout' %}" class="sheet-link sheet-link-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        {% elif request.user.doctor_set.all.0 %}
+            <a href="{% url 'doctor_home' %}" class="sheet-link"><i class="fas fa-home"></i> Home</a>
+            <a href="/profile_doctor" class="sheet-link"><i class="fas fa-id-card"></i> My Profile</a>
+            <a href="/view_search_pat" class="sheet-link"><i class="fas fa-database"></i> Patient Data</a>
+            <hr class="sheet-sep">
+            <a href="{% url 'change_password' %}" class="sheet-link"><i class="fas fa-key"></i> Change Password</a>
+            <a href="{% url 'logout' %}" class="sheet-link sheet-link-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        {% else %}
+            <a href="{% url 'home' %}" class="sheet-link"><i class="fas fa-home"></i> Home</a>
+            <a href="{% url 'login' %}" class="sheet-link"><i class="fas fa-sign-in-alt"></i> Login</a>
+            <a href="{% url 'signup' %}" class="sheet-link"><i class="fas fa-user-plus"></i> Sign Up</a>
+        {% endif %}
+    </div>
+
     <!-- Navigation -->
-    <nav class="bg-white shadow-lg">
+    <nav style="background:#fffdf9; border-bottom:1px solid #e8ddd0; box-shadow:0 1px 6px rgba(28,18,8,0.07);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
+                <!-- Logo -->
                 <div class="flex items-center">
-                    <a href="{% url 'home' %}" class="flex items-center">
-                        <i class="fas fa-heartbeat text-3xl text-purple-600 mr-3"></i>
-                        <span class="text-xl font-bold text-gray-800">Heart Disease Prediction</span>
+                    <a href="{% url 'home' %}" class="flex items-center" style="text-decoration:none;">
+                        <i class="fas fa-heartbeat mr-3" style="font-size:1.6rem; color:#5c3d2e;"></i>
+                        <span style="font-size:1.05rem; font-weight:700; color:#1c1208;">Heart Disease Prediction</span>
                     </a>
                 </div>
-                
+
                 <!-- Desktop Navigation -->
-                <div class="hidden md:flex items-center space-x-4">
+                <div class="hidden md:flex items-center" style="gap:4px;">
                     {% if request.user.is_staff %}
-                        <a href="{% url 'admin_home' %}" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
-                        <a href="/add_doctor" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">Add Doctor</a>
-                        <a href="/view_doctor" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">Doctors</a>
-                        <a href="/view_patient" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">Patients</a>
-                        <a href="/view_feedback" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">Feedback</a>
-                        <div class="relative group">
-                            <button class="flex items-center text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
-                                <i class="fas fa-user-circle mr-2"></i>{{ request.user.username }}
+                        <a href="{% url 'admin_home' %}" class="nav-link">Dashboard</a>
+                        <a href="/add_doctor" class="nav-link">Add Doctor</a>
+                        <a href="/view_doctor" class="nav-link">Doctors</a>
+                        <a href="/view_patient" class="nav-link">Patients</a>
+                        <a href="/view_feedback" class="nav-link">Feedback</a>
+                        <div class="dd-wrapper">
+                            <button class="dd-trigger" onclick="toggleDD('dd-admin')">
+                                <span class="nav-avatar"><i class="fas fa-user" style="font-size:0.75rem;"></i></span>
+                                {{ request.user.username }}
+                                <i class="fas fa-chevron-down" style="font-size:0.65rem; color:#b8a898;"></i>
                             </button>
-                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden group-hover:block">
-                                <a href="{% url 'change_password' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Change Password</a>
-                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                            <div class="dd-menu" id="dd-admin">
+                                <a href="{% url 'change_password' %}" class="dd-item"><i class="fas fa-key mr-2"></i>Change Password</a>
+                                <hr class="dd-sep">
+                                <a href="{% url 'logout' %}" class="dd-item dd-item-danger"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a>
                             </div>
                         </div>
                     {% elif request.user.patient_set.all.0 %}
-                        <a href="{% url 'patient_home' %}" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                        <a href="/add_heartdetail" class="bg-purple-600 text-white hover:bg-purple-700 px-4 py-2 rounded-md text-sm font-medium">Predict</a>
-                        <a href="/profile_doctor" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">My Profile</a>
-                        <a href="/view_search_pat" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">History</a>
-                        <a href="/sent_feedback" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">Feedback</a>
-                        <div class="relative group">
-                            <button class="flex items-center text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
-                                <i class="fas fa-user-circle mr-2"></i>{{ request.user.username }}
+                        <a href="{% url 'patient_home' %}" class="nav-link">Home</a>
+                        <a href="/add_heartdetail" class="nav-link-primary">Predict</a>
+                        <a href="/upload_ecg" class="nav-link">ECG</a>
+                        <a href="/find_doctors" class="nav-link">Doctors</a>
+                        <a href="/my_appointments" class="nav-link">Appointments</a>
+                        <a href="/view_search_pat" class="nav-link">History</a>
+                        <div class="dd-wrapper">
+                            <button class="dd-trigger" onclick="toggleDD('dd-patient')">
+                                <span class="nav-avatar"><i class="fas fa-user" style="font-size:0.75rem;"></i></span>
+                                {{ request.user.username }}
+                                <i class="fas fa-chevron-down" style="font-size:0.65rem; color:#b8a898;"></i>
                             </button>
-                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden group-hover:block">
-                                <a href="{% url 'change_password' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Change Password</a>
-                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                            <div class="dd-menu" id="dd-patient">
+                                <a href="/profile_doctor" class="dd-item"><i class="fas fa-id-card mr-2"></i>My Profile</a>
+                                <a href="{% url 'medical_chat' %}" class="dd-item"><i class="fas fa-robot mr-2"></i>AI Health Assistant</a>
+                                <a href="/sent_feedback" class="dd-item"><i class="fas fa-comment mr-2"></i>Feedback</a>
+                                <a href="{% url 'change_password' %}" class="dd-item"><i class="fas fa-key mr-2"></i>Change Password</a>
+                                <hr class="dd-sep">
+                                <a href="{% url 'logout' %}" class="dd-item dd-item-danger"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a>
                             </div>
                         </div>
                     {% elif request.user.doctor_set.all.0 %}
-                        <a href="{% url 'doctor_home' %}" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                        <a href="/profile_doctor" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">My Profile</a>
-                        <a href="/view_search_pat" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">Patient Data</a>
-                        <div class="relative group">
-                            <button class="flex items-center text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
-                                <i class="fas fa-user-circle mr-2"></i>{{ request.user.username }}
+                        <a href="{% url 'doctor_home' %}" class="nav-link">Home</a>
+                        <a href="/profile_doctor" class="nav-link">My Profile</a>
+                        <a href="/view_search_pat" class="nav-link">Patient Data</a>
+                        <div class="dd-wrapper">
+                            <button class="dd-trigger" onclick="toggleDD('dd-doctor')">
+                                <span class="nav-avatar"><i class="fas fa-user-md" style="font-size:0.75rem;"></i></span>
+                                Dr. {{ request.user.username }}
+                                <i class="fas fa-chevron-down" style="font-size:0.65rem; color:#b8a898;"></i>
                             </button>
-                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden group-hover:block">
-                                <a href="{% url 'change_password' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Change Password</a>
-                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                            <div class="dd-menu" id="dd-doctor">
+                                <a href="{% url 'change_password' %}" class="dd-item"><i class="fas fa-key mr-2"></i>Change Password</a>
+                                <hr class="dd-sep">
+                                <a href="{% url 'logout' %}" class="dd-item dd-item-danger"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a>
                             </div>
                         </div>
                     {% else %}
-                        <a href="{% url 'home' %}" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
-
-                        <a href="{% url 'login' %}" class="bg-purple-600 text-white hover:bg-purple-700 px-4 py-2 rounded-md text-sm font-medium">Login</a>
-                        <a href="{% url 'signup' %}" class="border border-purple-600 text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-md text-sm font-medium">Sign Up</a>
+                        <a href="{% url 'home' %}" class="nav-link">Home</a>
+                        <a href="{% url 'login' %}" class="nav-link-primary">Login</a>
+                        <a href="{% url 'signup' %}" class="nav-link-outline">Sign Up</a>
                     {% endif %}
                 </div>
-                
-                <!-- Mobile menu button -->
+
+                <!-- Mobile: Sheet trigger -->
                 <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-button" class="text-gray-700 hover:text-purple-600">
-                        <i class="fas fa-bars text-2xl"></i>
+                    <button onclick="openSheet()" style="background:none; border:none; color:#5c4a3a; font-size:1.35rem; cursor:pointer; padding:4px;">
+                        <i class="fas fa-bars"></i>
                     </button>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Mobile menu -->
-        <div id="mobile-menu" class="hidden md:hidden">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                {% if request.user.is_authenticated %}
-                    <a href="{% url 'logout' %}" class="block text-gray-700 hover:bg-purple-50 px-3 py-2 rounded-md text-base font-medium">Logout</a>
-                {% else %}
-                    <a href="{% url 'login' %}" class="block text-gray-700 hover:bg-purple-50 px-3 py-2 rounded-md text-base font-medium">Login</a>
-                    <a href="{% url 'signup' %}" class="block text-gray-700 hover:bg-purple-50 px-3 py-2 rounded-md text-base font-medium">Sign Up</a>
-                {% endif %}
             </div>
         </div>
     </nav>
@@ -126,41 +198,75 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 text-white mt-12">
+    <footer style="background:linear-gradient(135deg,#1c1208 0%,#3d2619 50%,#5c3d2e 100%); color:#faf7f0; margin-top:3rem;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Heart Disease Prediction</h3>
-                    <p class="text-gray-400 text-sm">Advanced ML-powered heart disease prediction system using 5 algorithms for accurate diagnosis.</p>
+                    <h3 style="font-size:1rem; font-weight:600; margin-bottom:1rem;">Heart Disease Prediction</h3>
+                    <p style="color:#c4a48e; font-size:0.85rem;">Advanced ML-powered heart disease prediction system using 5 algorithms for accurate diagnosis.</p>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="{% url 'home' %}" class="text-gray-400 hover:text-white">Home</a></li>
-
+                    <h3 style="font-size:1rem; font-weight:600; margin-bottom:1rem;">Quick Links</h3>
+                    <ul style="list-style:none; padding:0; font-size:0.85rem;">
+                        <li><a href="{% url 'home' %}" style="color:#c4a48e; text-decoration:none;">Home</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Connect</h3>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin-in"></i></a>
+                    <h3 style="font-size:1rem; font-weight:600; margin-bottom:1rem;">Connect</h3>
+                    <div style="display:flex; gap:1rem;">
+                        <a href="#" style="color:#c4a48e;"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" style="color:#c4a48e;"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color:#c4a48e;"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
             </div>
-            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
+            <div style="border-top:1px solid rgba(255,255,255,0.15); margin-top:2rem; padding-top:2rem; text-align:center; font-size:0.8rem; color:#c4a48e;">
                 <p>&copy; 2025 Heart Disease Prediction System. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
-    <!-- Mobile Menu Toggle Script -->
+    {% if request.user.patient_set.all.0 %}
+    <!-- Floating AI Chat Button (patients only) -->
+    <a href="{% url 'medical_chat' %}" id="fab-chat"
+       style="position:fixed; bottom:28px; right:28px; z-index:1000;
+              width:56px; height:56px; border-radius:50%;
+              background:linear-gradient(135deg,#5c3d2e,#3d2619);
+              color:#faf7f0; display:flex; align-items:center; justify-content:center;
+              font-size:1.4rem; box-shadow:0 4px 20px rgba(28,18,8,0.35);
+              text-decoration:none; transition:transform 0.2s, box-shadow 0.2s;"
+       title="AI Health Assistant"
+       onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(28,18,8,0.45)'"
+       onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(28,18,8,0.35)'">
+        <i class="fas fa-robot"></i>
+    </a>
+    {% endif %}
+
     <script>
-        document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
+        // shadcn Dropdown-Menu (click toggle, closes on outside click)
+        function toggleDD(id) {
+            const menu = document.getElementById(id);
+            const isOpen = menu.classList.contains('open');
+            document.querySelectorAll('.dd-menu').forEach(m => m.classList.remove('open'));
+            if (!isOpen) menu.classList.add('open');
+        }
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dd-wrapper')) {
+                document.querySelectorAll('.dd-menu').forEach(m => m.classList.remove('open'));
+            }
         });
+
+        // shadcn Sheet (mobile drawer)
+        function openSheet() {
+            document.getElementById('sheet').classList.add('open');
+            document.getElementById('sheet-overlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeSheet() {
+            document.getElementById('sheet').classList.remove('open');
+            document.getElementById('sheet-overlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
     </script>
 
     {% block extra_js %}{% endblock %}

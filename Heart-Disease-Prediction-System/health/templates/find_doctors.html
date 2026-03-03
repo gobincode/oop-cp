@@ -2,691 +2,870 @@
 {% load static %}
 
 {% block body %}
-<div class="page-shell">
-    <div class="container">
+<style>
+/* ── Page shell ─────────────────────────────────────────── */
+.fd-shell {
+    padding: 3.5rem 0 5rem;
+    background: hsl(var(--background));
+    min-height: 100vh;
+}
+.fd-container { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem; }
+
+/* ── Hero ────────────────────────────────────────────────── */
+.fd-hero { text-align: center; margin-bottom: 2.5rem; }
+.fd-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: rgba(92,61,46,0.08); color: var(--primary-color);
+    border: 1px solid rgba(92,61,46,0.18);
+    border-radius: 999px; padding: 0.3rem 0.85rem;
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 1rem;
+}
+.fd-title { font-size: 2.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.6rem; }
+.fd-subtitle { font-size: 1rem; color: var(--text-muted); max-width: 520px; margin: 0 auto; }
+
+/* ── shadcn Card base ─────────────────────────────────────── */
+.sc-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(28,18,8,0.06), 0 1px 2px rgba(28,18,8,0.04);
+}
+.sc-card-header { padding: 1.25rem 1.5rem 0; }
+.sc-card-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0 0 0.2rem; }
+.sc-card-desc { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+.sc-card-content { padding: 1.25rem 1.5rem; }
+.sc-card-footer { padding: 0 1.5rem 1.25rem; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+/* ── shadcn Input ─────────────────────────────────────────── */
+.sc-input {
+    height: 2.6rem; width: 100%;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    background: hsl(var(--background));
+    color: var(--text-primary);
+    padding: 0 0.875rem;
+    font-size: 0.875rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+}
+.sc-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(92,61,46,0.12);
+}
+.sc-input::placeholder { color: var(--text-light); }
+
+/* ── shadcn Buttons — use high-specificity selectors to beat global button{} rule ── */
+.fd-shell .sc-btn,
+a.sc-btn {
+    display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 0.4rem !important;
+    border-radius: 0.5rem !important; font-size: 0.875rem !important; font-weight: 500 !important;
+    padding: 0 1rem !important; height: 2.4rem !important; cursor: pointer !important;
+    border: 1px solid transparent !important; transition: background 0.15s, border-color 0.15s, color 0.15s !important;
+    white-space: nowrap !important; text-decoration: none !important; letter-spacing: 0 !important;
+    line-height: 1 !important;
+}
+.fd-shell .sc-btn:hover,
+a.sc-btn:hover { text-decoration: none !important; transform: none !important; }
+
+.fd-shell .sc-btn-primary,
+a.sc-btn-primary {
+    background: var(--primary-color) !important;
+    color: #fff !important;
+    border: 1px solid var(--primary-color) !important;
+}
+.fd-shell .sc-btn-primary:hover,
+a.sc-btn-primary:hover { background: var(--primary-dark) !important; border-color: var(--primary-dark) !important; color: #fff !important; }
+
+.fd-shell .sc-btn-outline,
+a.sc-btn-outline {
+    background: hsl(var(--card)) !important;
+    color: var(--primary-color) !important;
+    border: 1px solid hsl(var(--border)) !important;
+}
+.fd-shell .sc-btn-outline:hover,
+a.sc-btn-outline:hover { background: rgba(92,61,46,0.06) !important; color: var(--primary-color) !important; border-color: var(--primary-color) !important; }
+
+.fd-shell .sc-btn-ghost { background: transparent !important; color: var(--text-secondary) !important; border: 1px solid transparent !important; }
+.fd-shell .sc-btn-ghost:hover { background: rgba(92,61,46,0.06) !important; color: var(--text-primary) !important; }
+.fd-shell .sc-btn-sm { height: 2rem !important; padding: 0 0.75rem !important; font-size: 0.8rem !important; }
+.fd-shell .sc-btn-lg { height: 2.85rem !important; padding: 0 1.5rem !important; font-size: 0.9rem !important; }
+.fd-shell .sc-btn-full { width: 100% !important; }
+
+/* ── Search card layout ───────────────────────────────────── */
+.fd-search-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.fd-search-row .sc-input { flex: 1; min-width: 200px; }
+@media (max-width: 580px) {
+    .fd-search-row { flex-direction: column; align-items: stretch; }
+    .fd-search-row .sc-input { min-width: unset; }
+    .fd-title { font-size: 1.75rem; }
+}
+
+/* ── Map ──────────────────────────────────────────────────── */
+.fd-map-wrap { border-radius: 0.5rem; overflow: hidden; height: 420px; position: relative; }
+#map {
+    height: 100%; width: 100%;
+    background: hsl(var(--background));
+    display: flex; align-items: center; justify-content: center;
+}
+.map-loading-msg {
+    color: var(--text-muted); font-size: 0.875rem;
+    display: flex; align-items: center; gap: 0.5rem;
+}
+
+/* ── Separator ─────────────────────────────────────────────── */
+.fd-separator {
+    display: flex; align-items: center; gap: 1rem; margin: 2.5rem 0;
+}
+.fd-separator-line { flex: 1; height: 1px; background: hsl(var(--border)); }
+.fd-separator-text { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+
+/* ── Nearby results grid ──────────────────────────────────── */
+.fd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+
+/* ── Facility card ─────────────────────────────────────────── */
+.fc-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.fc-card:hover { box-shadow: 0 4px 16px rgba(28,18,8,0.1); transform: translateY(-2px); }
+.fc-card-name { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+.fc-card-meta { font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: 0.35rem; }
+.fc-card-meta i { margin-top: 2px; flex-shrink: 0; }
+.fc-card-actions { display: flex; gap: 0.5rem; margin-top: auto; padding-top: 0.75rem; }
+
+/* ── Badge ─────────────────────────────────────────────────── */
+.sc-badge {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    border-radius: 999px; padding: 0.2rem 0.65rem;
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em;
+    text-transform: capitalize;
+}
+.sc-badge-teal { background: rgba(59,125,110,0.12); color: #3b7d6e; border: 1px solid rgba(59,125,110,0.25); }
+.sc-badge-amber { background: rgba(180,100,30,0.1); color: #b4641e; border: 1px solid rgba(180,100,30,0.2); }
+.sc-badge-espresso { background: rgba(92,61,46,0.1); color: var(--primary-color); border: 1px solid rgba(92,61,46,0.2); }
+
+/* ── Doctor card ───────────────────────────────────────────── */
+.dr-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    display: flex; flex-direction: column; gap: 1rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+    cursor: pointer;
+}
+.dr-card:hover { box-shadow: 0 6px 20px rgba(28,18,8,0.1); transform: translateY(-3px); }
+.dr-header { display: flex; align-items: center; gap: 1rem; }
+.dr-avatar {
+    width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(92,61,46,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.35rem; color: var(--primary-color);
+    border: 2px solid rgba(92,61,46,0.15);
+}
+.dr-avatar img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
+.dr-name { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0 0 0.2rem; }
+.dr-spec { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+.dr-meta { display: flex; flex-direction: column; gap: 0.35rem; }
+.dr-meta-row { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); }
+.dr-meta-row i { color: var(--primary-color); margin-top: 2px; width: 14px; flex-shrink: 0; }
+.dr-divider { height: 1px; background: hsl(var(--border)); margin: 0; }
+
+/* ── Empty state ───────────────────────────────────────────── */
+.fd-empty {
+    text-align: center; padding: 3.5rem 2rem;
+    border: 1px dashed hsl(var(--border));
+    border-radius: 0.75rem;
+    background: rgba(92,61,46,0.03);
+}
+.fd-empty-icon { font-size: 2.5rem; color: var(--text-light); margin-bottom: 0.75rem; }
+.fd-empty h5 { color: var(--text-primary); font-weight: 600; margin-bottom: 0.5rem; }
+.fd-empty p { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem; }
+
+/* ── Sections ─────────────────────────────────────────────── */
+.fd-section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem;
+}
+.fd-section-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+.fd-section-hint { font-size: 0.78rem; color: var(--text-muted); }
+
+/* ── shadcn Dialog (custom – no Bootstrap modal) ──────────── */
+.sc-dialog-overlay {
+    position: fixed; inset: 0; z-index: 9998;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(2px);
+    display: flex; align-items: center; justify-content: center; padding: 1rem;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.sc-dialog-overlay.open { opacity: 1; pointer-events: all; }
+.sc-dialog {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.875rem;
+    width: 100%; max-width: 440px;
+    box-shadow: 0 20px 60px rgba(28,18,8,0.18), 0 6px 20px rgba(28,18,8,0.12);
+    transform: scale(0.95) translateY(8px); transition: transform 0.2s;
+}
+.sc-dialog-overlay.open .sc-dialog { transform: scale(1) translateY(0); }
+.sc-dialog-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+}
+.sc-dialog-title { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.25rem; }
+.sc-dialog-desc { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+.sc-dialog-close {
+    width: 1.75rem; height: 1.75rem; border-radius: 0.375rem;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent !important; border: none !important;
+    color: var(--text-muted) !important; cursor: pointer;
+    transition: background 0.15s !important; padding: 0 !important;
+    transform: none !important; box-shadow: none !important;
+}
+.sc-dialog-close:hover { background: rgba(92,61,46,0.08) !important; color: var(--text-primary) !important; }
+.sc-dialog-body { padding: 1.25rem 1.5rem; }
+.sc-dialog-footer { padding: 0 1.5rem 1.5rem; display: flex; gap: 0.6rem; flex-direction: column; }
+
+/* ── Facility info block inside dialog ──────────────────────── */
+.dlg-facility {
+    background: rgba(92,61,46,0.04);
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    padding: 0.875rem 1rem;
+    margin-bottom: 1.25rem;
+}
+.dlg-facility-name { font-weight: 700; color: var(--text-primary); font-size: 0.9rem; margin-bottom: 0.35rem; }
+.dlg-facility-row { display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.2rem; }
+.dlg-facility-row:last-child { margin-bottom: 0; }
+.dlg-facility-row i { color: var(--primary-color); width: 13px; flex-shrink: 0; margin-top: 2px; }
+.dlg-no-phone { color: var(--text-light); font-style: italic; }
+
+/* ── Option buttons ─────────────────────────────────────────── */
+.dlg-option {
+    width: 100%; padding: 0.875rem 1rem;
+    border-radius: 0.6rem; border: 1px solid hsl(var(--border)) !important;
+    background: hsl(var(--card)) !important;
+    text-align: left; cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s !important;
+    transform: none !important; box-shadow: none !important;
+    display: flex; align-items: center; gap: 0.875rem;
+}
+.dlg-option:hover { border-color: var(--primary-color) !important; background: rgba(92,61,46,0.04) !important; box-shadow: 0 0 0 3px rgba(92,61,46,0.08) !important; }
+.dlg-option.primary-opt { background: var(--primary-color) !important; border-color: var(--primary-color) !important; color: #fff; }
+.dlg-option.primary-opt:hover { background: var(--primary-dark) !important; border-color: var(--primary-dark) !important; }
+.dlg-opt-icon {
+    width: 2.25rem; height: 2.25rem; border-radius: 0.5rem; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+}
+.primary-opt .dlg-opt-icon { background: rgba(255,255,255,0.2); color: #fff; }
+.secondary-opt .dlg-opt-icon { background: rgba(92,61,46,0.08); color: var(--primary-color); }
+.dlg-opt-text .dlg-opt-label { font-size: 0.875rem; font-weight: 600; color: inherit; display: block; margin-bottom: 0.1rem; }
+.dlg-opt-text .dlg-opt-hint { font-size: 0.72rem; opacity: 0.72; }
+.primary-opt .dlg-opt-text .dlg-opt-label { color: #fff; }
+.secondary-opt .dlg-opt-text .dlg-opt-label { color: var(--text-primary); }
+.secondary-opt .dlg-opt-text .dlg-opt-hint { color: var(--text-muted); opacity: 1; }
+
+/* ── Mapbox popup override ─────────────────────────────────── */
+.mapboxgl-popup-content {
+    padding: 0 !important; border-radius: 0.625rem !important;
+    box-shadow: 0 8px 24px rgba(28,18,8,0.14) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+}
+.mapboxgl-popup-close-button {
+    font-size: 1.1rem !important; color: var(--text-muted) !important;
+    padding: 0.25rem 0.5rem !important; right: 0.25rem !important; top: 0.25rem !important;
+}
+.mapboxgl-popup-close-button:hover { color: var(--text-primary) !important; background: rgba(0,0,0,0.05) !important; border-radius: 4px; }
+.mp-popup { padding: 1rem; min-width: 220px; }
+.mp-popup-name { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem; }
+.mp-popup-type { font-size: 0.72rem; font-weight: 600; text-transform: capitalize; margin-bottom: 0.35rem; }
+.mp-popup-addr { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.35rem; line-height: 1.4; }
+.mp-popup-phone { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem; }
+.mp-popup-actions { display: flex; gap: 0.4rem; }
+.mp-popup-btn {
+    flex: 1; padding: 0.35rem 0; border-radius: 0.375rem;
+    font-size: 0.72rem; font-weight: 600; text-align: center;
+    cursor: pointer; border: none; text-decoration: none;
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem;
+}
+.mp-popup-btn-primary { background: var(--primary-color); color: #fff; }
+.mp-popup-btn-primary:hover { background: var(--primary-dark); color: #fff; text-decoration: none; }
+.mp-popup-btn-outline { background: transparent; color: var(--text-secondary); border: 1px solid hsl(var(--border)); }
+.mp-popup-btn-outline:hover { background: rgba(0,0,0,0.04); text-decoration: none; color: var(--text-primary); }
+
+/* ── Alert ─────────────────────────────────────────────────── */
+.sc-alert {
+    padding: 0.875rem 1rem; border-radius: 0.5rem;
+    font-size: 0.83rem; display: flex; align-items: flex-start; gap: 0.5rem;
+}
+.sc-alert-warning { background: rgba(180,100,30,0.08); border: 1px solid rgba(180,100,30,0.2); color: #7a4010; }
+.sc-alert-error { background: rgba(185,28,28,0.06); border: 1px solid rgba(185,28,28,0.2); color: #991b1b; }
+
+/* ── Loading spinner ───────────────────────────────────────── */
+.fd-spinner { display: inline-block; width: 1rem; height: 1rem; border: 2px solid rgba(92,61,46,0.2); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Messages ──────────────────────────────────────────────── */
+.sc-message { padding: 0.875rem 1rem; border-radius: 0.5rem; font-size: 0.83rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: flex-start; }
+.sc-message-success { background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); color: #166534; }
+.sc-message-error, .sc-message-danger { background: rgba(185,28,28,0.06); border: 1px solid rgba(185,28,28,0.18); color: #991b1b; }
+.sc-message-warning { background: rgba(180,100,30,0.08); border: 1px solid rgba(180,100,30,0.2); color: #7a4010; }
+.sc-message-close { background: none; border: none; cursor: pointer; color: inherit; opacity: 0.6; padding: 0; line-height: 1; }
+</style>
+
+<div class="fd-shell">
+    <div class="fd-container">
         {% csrf_token %}
 
         {% if messages %}
-        <div class="mb-4">
+        <div style="margin-bottom:1.25rem;">
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-2" role="alert">
-                {{ message }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+            <div class="sc-message sc-message-{{ message.tags }}">
+                <span>{{ message }}</span>
+                <button class="sc-message-close" onclick="this.parentElement.remove();">&times;</button>
             </div>
             {% endfor %}
         </div>
         {% endif %}
 
-        <section class="section-intro text-center mb-5 fade-in">
-            <span class="section-badge"><i class="fas fa-heartbeat"></i> Personalized care</span>
-            <h2 class="section-heading">Find Cardiac Experts Near You</h2>
-            <p class="section-subtitle">Discover cardiologists and cardiac hospitals close to you, compare appointments, and choose the care option that fits your needs.</p>
-        </section>
+        <!-- Hero -->
+        <div class="fd-hero">
+            <div class="fd-badge"><i class="fas fa-heartbeat"></i> Personalized Care</div>
+            <h1 class="fd-title">Find Cardiac Experts Near You</h1>
+            <p class="fd-subtitle">Discover cardiologists and cardiac hospitals close to you, compare appointments, and choose the care that fits your needs.</p>
+        </div>
 
-        <div class="search-card fade-in">
-            <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between">
-                <div>
-                    <h4 class="mb-1">Search by location</h4>
-                    <p class="text-muted mb-0">Use your current location or enter a city to explore trusted cardiac specialists.</p>
+        <!-- Search Card -->
+        <div class="sc-card" style="margin-bottom:1.25rem;">
+            <div class="sc-card-header">
+                <p class="sc-card-title">Search by Location</p>
+                <p class="sc-card-desc">Enter a city or use your current location to explore trusted cardiac specialists nearby.</p>
+            </div>
+            <div class="sc-card-content">
+                <div class="fd-search-row">
+                    <input type="text" id="searchLocation" class="sc-input"
+                           placeholder="e.g. Mumbai, Maharashtra"
+                           value="{{ patient_address }}">
+                    <button id="btnSearch" class="sc-btn sc-btn-primary" onclick="searchNearbyDoctors()">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    <button id="btnMyLocation" class="sc-btn sc-btn-outline" onclick="useMyLocation()">
+                        <i class="fas fa-location-arrow"></i> My Location
+                    </button>
                 </div>
             </div>
-            <div class="input-group input-group-lg flex-lg-nowrap">
-                <input type="text" id="searchLocation" class="form-control shadow-sm"
-                       placeholder="Enter your location (e.g., Mumbai, Maharashtra)"
-                       value="{{ patient_address }}">
-                <div class="input-group-append d-flex flex-column flex-lg-row mt-3 mt-lg-0">
-                    <button class="btn btn-primary mr-lg-2 mb-2 mb-lg-0" type="button" onclick="searchNearbyDoctors()">
-                        <i class="fas fa-search"></i> Find Nearby Doctors
-                    </button>
-                    <button class="btn btn-outline-info" type="button" onclick="useMyLocation()">
-                        <i class="fas fa-location-arrow"></i> Use My Location
-                    </button>
+        </div>
+
+        <!-- Map Card -->
+        <div class="sc-card" style="margin-bottom:1.25rem; padding:0.75rem;">
+            <div class="fd-map-wrap">
+                <div id="map">
+                    <div class="map-loading-msg">
+                        <div class="fd-spinner"></div> Loading map…
+                    </div>
                 </div>
             </div>
-            <small class="d-block mt-3 text-muted">We’ll search for cardiologists and cardiac hospitals near you.</small>
         </div>
 
-        <div class="map-card mt-4 fade-in">
-            <div id="map" class="bg-background">
-                <div class="map-error-message">Loading map…</div>
+        <!-- Nearby Results -->
+        <div id="nearbyResults" style="display:none; margin-bottom:2rem;">
+            <div class="fd-section-header">
+                <h2 class="fd-section-title"><i class="fas fa-map-marker-alt" style="color:var(--primary-color);margin-right:0.4rem;"></i>Nearby Cardiac Facilities</h2>
+                <span class="fd-section-hint">Within 5 km of your selected location</span>
             </div>
+            <div id="nearbyPlacesList" class="fd-grid"></div>
         </div>
 
-        <div id="nearbyResults" class="nearby-results fade-in" style="display: none;">
-            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between mb-3">
-                <h4 class="mb-2 mb-md-0"><i class="fas fa-map-marker-alt text-primary"></i> Nearby Cardiac Doctors & Hospitals</h4>
-                <small class="text-muted">Showing open facilities within a 5 km radius of your selected location.</small>
-            </div>
-            <div id="nearbyPlacesList" class="row"></div>
+        <!-- Separator -->
+        <div class="fd-separator">
+            <div class="fd-separator-line"></div>
+            <span class="fd-separator-text">Registered Specialists</span>
+            <div class="fd-separator-line"></div>
         </div>
 
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mt-5 mb-4">
+        <!-- Registered Doctors -->
+        <div class="fd-section-header" style="margin-bottom:1.25rem;">
             <div>
-                <h4 class="mb-1"><i class="fas fa-hospital text-primary"></i> Registered Cardiac Specialists</h4>
-                <p class="text-muted mb-0">Book appointments with pre-verified cardiologists and cardiac hospitals.</p>
+                <h2 class="fd-section-title"><i class="fas fa-hospital" style="color:var(--primary-color);margin-right:0.4rem;"></i>Registered Cardiac Specialists</h2>
+                <p class="fd-section-hint" style="margin:0.2rem 0 0;">Book with pre-verified cardiologists and cardiac hospitals.</p>
             </div>
-            <a href="{% url 'patient_home' %}" class="btn btn-outline-primary mt-3 mt-md-0">
-                <i class="fas fa-home"></i> Patient Dashboard
+            <a href="{% url 'patient_home' %}" class="sc-btn sc-btn-outline sc-btn-sm">
+                <i class="fas fa-home"></i> Dashboard
             </a>
         </div>
 
         {% if doctors %}
-        <div class="doctor-grid row">
+        <div class="fd-grid" style="margin-bottom:2rem;">
             {% for doctor in doctors %}
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="doctor-card h-100 fade-in" data-marker-index="{{ forloop.counter0 }}">
-                    <div class="d-flex align-items-center mb-4">
+            <div class="dr-card" data-marker-index="{{ forloop.counter0 }}">
+                <div class="dr-header">
+                    <div class="dr-avatar">
                         {% if doctor.image %}
-                        <img src="{{ doctor.image.url }}" alt="Doctor" class="mr-3" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.12);">
+                        <img src="{{ doctor.image.url }}" alt="Dr. {{ doctor.user.first_name }}">
                         {% else %}
-                        <div class="doctor-avatar mr-3">
-                            <i class="fas fa-user-md"></i>
-                        </div>
+                        <i class="fas fa-user-md"></i>
                         {% endif %}
-                        <div>
-                            <h5 class="mb-1">Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</h5>
-                            <small class="text-muted text-uppercase">{{ doctor.specialization|default:"Cardiologist" }}</small>
-                        </div>
                     </div>
-                    <div class="doctor-meta mb-4">
-                        <p class="mb-2"><i class="fas fa-hospital text-primary mr-2"></i><strong>Hospital:</strong> {{ doctor.hospital_name|default:"Private Practice" }}</p>
-                        <p class="mb-2"><i class="fas fa-map-marker-alt text-primary mr-2"></i><strong>Address:</strong> {{ doctor.address }}</p>
-                        <p class="mb-0"><i class="fas fa-phone text-primary mr-2"></i><strong>Contact:</strong> {{ doctor.contact }}</p>
-                    </div>
-                    <div class="card-actions mt-auto">
-                        <a href="{% url 'book_appointment' doctor.id %}" class="btn btn-primary btn-block">
-                            <i class="fas fa-calendar-plus"></i> Book Appointment
-                        </a>
+                    <div>
+                        <p class="dr-name">Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</p>
+                        <span class="sc-badge sc-badge-espresso">{{ doctor.specialization|default:"Cardiologist" }}</span>
                     </div>
                 </div>
+                <div class="dr-divider"></div>
+                <div class="dr-meta">
+                    <div class="dr-meta-row"><i class="fas fa-hospital"></i>{{ doctor.hospital_name|default:"Private Practice" }}</div>
+                    <div class="dr-meta-row"><i class="fas fa-map-marker-alt"></i>{{ doctor.address }}</div>
+                    <div class="dr-meta-row"><i class="fas fa-phone"></i>{{ doctor.contact }}</div>
+                </div>
+                <a href="{% url 'book_appointment' doctor.id %}" class="sc-btn sc-btn-primary sc-btn-full" onclick="event.stopPropagation();">
+                    <i class="fas fa-calendar-plus"></i> Book Appointment
+                </a>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <div class="empty-state text-center fade-in">
-            <h5><i class="fas fa-info-circle"></i> No Doctors Available</h5>
+        <div class="fd-empty">
+            <div class="fd-empty-icon"><i class="fas fa-user-md"></i></div>
+            <h5>No Doctors Available</h5>
             <p>There are currently no cardiac specialists registered in the system.</p>
-            <div class="card-actions justify-content-center mt-3">
-                <a href="{% url 'patient_home' %}" class="btn btn-outline-primary"><i class="fas fa-home"></i> Patient Dashboard</a>
-                <a href="{% url 'my_appointments' %}" class="btn btn-primary"><i class="fas fa-calendar"></i> My Appointments</a>
+            <div style="display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap;">
+                <a href="{% url 'patient_home' %}" class="sc-btn sc-btn-outline"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="{% url 'my_appointments' %}" class="sc-btn sc-btn-primary"><i class="fas fa-calendar"></i> My Appointments</a>
             </div>
         </div>
         {% endif %}
 
-        <div class="card-actions justify-content-center mt-4">
-            <a href="{% url 'patient_home' %}" class="btn btn-outline-primary"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-            <a href="{% url 'my_appointments' %}" class="btn btn-primary"><i class="fas fa-calendar"></i> My Appointments</a>
+        <!-- Footer actions -->
+        <div style="display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap;margin-top:1rem;">
+            <a href="{% url 'patient_home' %}" class="sc-btn sc-btn-outline"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            <a href="{% url 'my_appointments' %}" class="sc-btn sc-btn-primary"><i class="fas fa-calendar"></i> My Appointments</a>
         </div>
     </div>
 </div>
 
-<!-- Booking Options Modal -->
-<div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="bookingModalLabel">
-                    <i class="fas fa-calendar-plus"></i> Book Appointment
-                </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+<!-- ── shadcn Dialog ──────────────────────────────────────────────────── -->
+<div id="bookingOverlay" class="sc-dialog-overlay" onclick="closeBookingDialog(event)">
+    <div class="sc-dialog" role="dialog" aria-labelledby="dlgTitle" aria-modal="true">
+        <div class="sc-dialog-header">
+            <div>
+                <p class="sc-dialog-title" id="dlgTitle">Book an Appointment</p>
+                <p class="sc-dialog-desc">Choose how you'd like to schedule.</p>
             </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <h6 class="font-weight-bold" id="modalHospitalName"></h6>
-                    <p class="text-muted mb-1" id="modalHospitalAddress"></p>
-                    <p class="mb-0"><i class="fas fa-phone text-primary"></i> <span id="modalHospitalPhone"></span></p>
+            <button class="sc-dialog-close" onclick="closeBookingDialog()" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="sc-dialog-body">
+            <!-- Facility info -->
+            <div class="dlg-facility">
+                <div class="dlg-facility-name" id="dlgName"></div>
+                <div class="dlg-facility-row" id="dlgAddressRow">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="dlgAddress"></span>
                 </div>
-                <hr>
-                <p class="mb-3">Choose how you'd like to book your appointment:</p>
-                
-                <div class="row">
-                    <div class="col-12 mb-3">
-                        <button class="btn btn-primary btn-lg btn-block" onclick="confirmAIBooking()">
-                            <i class="fas fa-robot"></i> Let AI Agent Call & Book
-                            <br><small class="d-block mt-1">Recommended - AI will call and schedule for you</small>
-                        </button>
-                    </div>
-                    <div class="col-12">
-                        <button class="btn btn-outline-secondary btn-lg btn-block" onclick="confirmManualCall()">
-                            <i class="fas fa-phone"></i> Call Manually
-                            <br><small class="d-block mt-1">You'll be connected to call directly</small>
-                        </button>
-                    </div>
+                <div class="dlg-facility-row" id="dlgPhoneRow">
+                    <i class="fas fa-phone"></i>
+                    <span id="dlgPhone"></span>
+                </div>
+                <div class="dlg-facility-row" id="dlgMapRow" style="display:none;">
+                    <i class="fas fa-map"></i>
+                    <a id="dlgMapLink" href="#" target="_blank" style="color:var(--primary-color);font-size:0.78rem;">View on Google Maps</a>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- Loading Modal -->
-<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-labelledby="loadingModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
-        <div class="modal-content">
-            <div class="modal-body text-center py-4">
-                <div class="spinner-border text-primary mb-3" role="status">
-                    <span class="sr-only">Loading...</span>
+        <div class="sc-dialog-footer">
+            <button class="dlg-option primary-opt" onclick="confirmAIBooking()">
+                <div class="dlg-opt-icon"><i class="fas fa-robot"></i></div>
+                <div class="dlg-opt-text">
+                    <span class="dlg-opt-label">Let AI Agent Call &amp; Book</span>
+                    <span class="dlg-opt-hint">Recommended — AI calls and schedules for you</span>
                 </div>
-                <p class="mb-0">Fetching phone number...</p>
-                <button type="button" class="btn btn-sm btn-secondary mt-3" data-dismiss="modal">Cancel</button>
-            </div>
+            </button>
+            <button class="dlg-option secondary-opt" onclick="confirmManualCall()">
+                <div class="dlg-opt-icon"><i class="fas fa-phone"></i></div>
+                <div class="dlg-opt-text">
+                    <span class="dlg-opt-label">Call Manually</span>
+                    <span class="dlg-opt-hint">You'll be connected directly</span>
+                </div>
+            </button>
         </div>
     </div>
 </div>
 
 <script>
 const doctors = {{ doctors_json|safe }};
-const googleMapsKey = "{{ GOOGLE_MAPS_API_KEY|default:'' }}";
-let map;
-let markers = [];
-let infoWindows = [];
-let placesService;
-let geocoder;
-let userLocation = null;
+const MAPBOX_TOKEN = "{{ MAPBOX_API_KEY|default:'' }}";
 
-function renderMapError(message) {
-    const mapContainer = document.getElementById('map');
-    if (mapContainer) {
-        mapContainer.classList.add('map-error-state');
-        mapContainer.innerHTML = `<div class="map-error-message"><i class="fas fa-map-marker-alt mr-2 text-primary"></i>${message}</div>`;
+let map, markerObjects = [], popupObjects = [], nearbyMarkers = [];
+let currentBooking = { name: '', address: '', phone: '', lat: 0, lng: 0 };
+let mapReady = false;
+let pendingLocationSearch = null; // queued search before map loads
+
+/* ── Map error ─────────────────────────────────────────── */
+function renderMapError(msg) {
+    var el = document.getElementById('map');
+    if (!el) return;
+    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:0.875rem;gap:0.5rem;"><i class="fas fa-exclamation-circle" style="color:#b4641e;"></i>' + msg + '</div>';
+}
+
+/* ── Mapbox init ───────────────────────────────────────── */
+function initMapbox() {
+    if (!MAPBOX_TOKEN) { renderMapError('Map not configured.'); return; }
+    mapboxgl.accessToken = MAPBOX_TOKEN;
+    var container = document.getElementById('map');
+    if (!container) return;
+    container.innerHTML = '';
+
+    map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: [78.9629, 20.5937], zoom: 5
+    });
+    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+
+    var bounds = new mapboxgl.LngLatBounds(), hasMarkers = false;
+
+    doctors.forEach(function(doc, idx) {
+        if (doc.latitude && doc.longitude && doc.latitude !== 0 && doc.longitude !== 0) {
+            var popup = new mapboxgl.Popup({ offset: 25, maxWidth: '280px' })
+                .setHTML(buildDoctorPopupHtml(doc));
+
+            var dot = makeDot('#5c3d2e', 28);
+            var marker = new mapboxgl.Marker(dot)
+                .setLngLat([doc.longitude, doc.latitude])
+                .setPopup(popup).addTo(map);
+
+            markerObjects.push(marker); popupObjects.push(popup);
+            bounds.extend([doc.longitude, doc.latitude]); hasMarkers = true;
+        } else {
+            markerObjects.push(null); popupObjects.push(null);
+        }
+    });
+
+    if (hasMarkers) map.fitBounds(bounds, { padding: 60, maxZoom: 15 });
+
+    map.on('load', function() {
+        mapReady = true;
+        // Run any queued location search
+        if (pendingLocationSearch) {
+            var p = pendingLocationSearch;
+            pendingLocationSearch = null;
+            doMapFlyAndSearch(p.lng, p.lat);
+        }
+    });
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            var dot = makeDot('#f59e0b', 14);
+            new mapboxgl.Marker(dot).setLngLat([pos.coords.longitude, pos.coords.latitude]).addTo(map);
+            if (!hasMarkers) { map.setCenter([pos.coords.longitude, pos.coords.latitude]); map.setZoom(12); }
+        });
     }
 }
 
-window.initMap = function () {
-    try {
-        const defaultCenter = { lat: 20.5937, lng: 78.9629 };
-        const mapContainer = document.getElementById('map');
-        if (!mapContainer) {
-            return;
-        }
+function makeDot(color, size) {
+    var el = document.createElement('div');
+    el.style.cssText = 'width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + color + ';border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.25);cursor:pointer;';
+    return el;
+}
 
-        mapContainer.classList.remove('map-error-state');
-        mapContainer.innerHTML = '';
+function buildDoctorPopupHtml(doc) {
+    return '<div class="mp-popup">' +
+        '<div class="mp-popup-name"><i class="fas fa-user-md" style="color:var(--primary-color);margin-right:4px;"></i>' + doc.name + '</div>' +
+        '<div class="mp-popup-type" style="color:var(--primary-color);">' + (doc.specialization || 'Cardiologist') + '</div>' +
+        '<div class="mp-popup-addr"><i class="fas fa-map-marker-alt" style="color:var(--text-muted);margin-right:4px;"></i>' + doc.address + '</div>' +
+        '<div class="mp-popup-phone"><i class="fas fa-phone" style="color:var(--text-muted);margin-right:4px;"></i>' + doc.contact + '</div>' +
+        '<div class="mp-popup-actions">' +
+        '<a href="/book_appointment/' + doc.id + '/" class="mp-popup-btn mp-popup-btn-primary"><i class="fas fa-calendar-plus"></i> Book</a>' +
+        '</div></div>';
+}
 
-        map = new google.maps.Map(mapContainer, {
-            zoom: 5,
-            center: defaultCenter,
-            mapTypeControl: true,
-            streetViewControl: true,
-            fullscreenControl: true,
-            styles: [
-                {
-                    featureType: 'poi.medical',
-                    elementType: 'geometry',
-                    stylers: [{ color: '#dbeafe' }],
-                },
-            ],
-        });
+/* ── helpers ────────────────────────────────────────────── */
+function setLocBtnState(btn, loading) {
+    if (!btn) return;
+    btn.disabled = loading;
+    btn.innerHTML = loading
+        ? '<div class="fd-spinner" style="width:14px;height:14px;border-width:2px;"></div> Locating…'
+        : '<i class="fas fa-location-arrow"></i> My Location';
+}
 
-        const bounds = new google.maps.LatLngBounds();
-        let hasValidMarkers = false;
-
-        doctors.forEach(function (doctor, index) {
-            if (doctor.latitude && doctor.longitude && doctor.latitude !== 0 && doctor.longitude !== 0) {
-                const position = { lat: doctor.latitude, lng: doctor.longitude };
-                const marker = new google.maps.Marker({
-                    position,
-                    map,
-                    title: doctor.name,
-                    animation: google.maps.Animation.DROP,
-                    icon: {
-                        url: 'https://maps.google.com/mapfiles/ms/icons/ltblue-dot.png',
-                        scaledSize: new google.maps.Size(40, 40),
-                    },
-                });
-
-                const infoWindow = new google.maps.InfoWindow({
-                    content: `
-                        <div style="min-width: 240px; padding: 14px; font-family: 'Inter', sans-serif;">
-                            <h6 style="margin-bottom: 10px; color: #1d4ed8; font-weight: 600;">
-                                <i class="fas fa-user-md" style="color: #2563eb;"></i> ${doctor.name}
-                            </h6>
-                            <p style="margin-bottom: 6px; font-weight: 600; color: #1e293b;">${doctor.hospital}</p>
-                            <p style="margin-bottom: 6px; font-size: 13px; color: #475569;">${doctor.address}</p>
-                            <p style="margin-bottom: 12px; font-size: 13px; color: #0f172a;">
-                                <i class="fas fa-phone" style="color: #0ea5e9;"></i> ${doctor.contact}
-                            </p>
-                            <a href="/book_appointment/${doctor.id}/" class="btn btn-sm btn-primary btn-block" style="border-radius: 999px;">
-                                <i class="fas fa-calendar-plus"></i> Book Appointment
-                            </a>
-                        </div>
-                    `,
-                });
-
-                marker.addListener('click', function () {
-                    infoWindows.forEach(function (iw) {
-                        iw.close();
-                    });
-                    infoWindow.open(map, marker);
-                });
-
-                markers.push(marker);
-                infoWindows.push(infoWindow);
-                bounds.extend(position);
-                hasValidMarkers = true;
-            }
-        });
-
-        if (hasValidMarkers) {
-            map.fitBounds(bounds);
-            google.maps.event.addListenerOnce(map, 'bounds_changed', function () {
-                if (map.getZoom() > 15) {
-                    map.setZoom(15);
-                }
-            });
-        }
-
-        placesService = new google.maps.places.PlacesService(map);
-        geocoder = new google.maps.Geocoder();
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                userLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude,
-                };
-
-                new google.maps.Marker({
-                    position: userLocation,
-                    map,
-                    title: 'Your Location',
-                    icon: {
-                        url: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
-                        scaledSize: new google.maps.Size(40, 40),
-                    },
-                });
-
-                if (!hasValidMarkers) {
-                    map.setCenter(userLocation);
-                    map.setZoom(12);
-                }
-            });
-        }
-    } catch (error) {
-        console.error('Failed to initialise map', error);
-        renderMapError('We couldn\'t load the interactive map right now. Please try again shortly.');
+function doMapFlyAndSearch(lng, lat) {
+    if (mapReady) {
+        map.flyTo({ center: [lng, lat], zoom: 13 });
     }
-};
+    searchNearbyDoctorsAtLocation(lng, lat);
+}
 
+/* ── Location search ───────────────────────────────────── */
 function useMyLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            userLocation = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-            };
-            
-            map.setCenter(userLocation);
-            map.setZoom(13);
-            
-            // Search nearby
-            searchNearbyDoctorsAtLocation(userLocation);
-        }, function(error) {
-            alert('Unable to get your location. Please enter your location manually.');
-        });
-    } else {
-        alert('Geolocation is not supported by your browser.');
+    if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser. Please enter your location manually.');
+        return;
     }
+    var btn = document.getElementById('btnMyLocation');
+    setLocBtnState(btn, true);
+
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        setLocBtnState(btn, false);
+        var lng = pos.coords.longitude;
+        var lat = pos.coords.latitude;
+        if (!mapReady) {
+            // Queue — map is still loading
+            pendingLocationSearch = { lng: lng, lat: lat };
+            // Still kick off the Overpass search; results will show when map is ready
+            searchNearbyDoctorsAtLocation(lng, lat);
+        } else {
+            doMapFlyAndSearch(lng, lat);
+        }
+    }, function(err) {
+        setLocBtnState(btn, false);
+        var msg = 'Unable to get your location.';
+        if (err.code === 1) msg = 'Location access was denied. Please allow location access in your browser settings.';
+        if (err.code === 2) msg = 'Location unavailable. Please enter your location manually.';
+        alert(msg);
+    }, { timeout: 10000 });
 }
 
 function searchNearbyDoctors() {
-    var location = document.getElementById('searchLocation').value;
-    
-    if (!location) {
-        alert('Please enter a location');
-        return;
-    }
-    
-    // Geocode the location
-    if (!geocoder) {
-        renderMapError('Location services are currently unavailable.');
-        return;
-    }
+    var loc = document.getElementById('searchLocation').value.trim();
+    if (!loc) { alert('Please enter a location.'); return; }
+    var btn = document.getElementById('btnSearch');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<div class="fd-spinner" style="width:14px;height:14px;border-width:2px;"></div> Searching…'; }
 
-    geocoder.geocode({ 'address': location }, function(results, status) {
-        if (status === 'OK') {
-            var location = results[0].geometry.location;
-            map.setCenter(location);
-            map.setZoom(13);
-            
-            // Search nearby
-            searchNearbyDoctorsAtLocation(location);
-        } else {
-            alert('Location not found. Please try a different address.');
-        }
-    });
+    fetch('https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(loc) + '.json?access_token=' + MAPBOX_TOKEN + '&limit=1')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-search"></i> Search'; }
+            if (data.features && data.features.length) {
+                var c = data.features[0].center;
+                if (!mapReady) {
+                    pendingLocationSearch = { lng: c[0], lat: c[1] };
+                    searchNearbyDoctorsAtLocation(c[0], c[1]);
+                } else {
+                    doMapFlyAndSearch(c[0], c[1]);
+                }
+            } else { alert('Location not found. Try a different address.'); }
+        })
+        .catch(function() {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-search"></i> Search'; }
+            alert('Failed to search. Check your connection.');
+        });
 }
 
-function searchNearbyDoctorsAtLocation(location) {
-    // Clear previous nearby markers
-    markers.forEach(function(marker) {
-        if (marker.nearbyPlace) {
-            marker.setMap(null);
-        }
-    });
-    
-    // Search for cardiologists
-    var request = {
-        location: location,
-        radius: 5000, // 5km radius
-        keyword: 'cardiologist heart doctor cardiac',
-        type: 'doctor'
-    };
-    
-    if (!placesService) {
-        renderMapError('Unable to search nearby specialists right now.');
-        return;
-    }
+/* ── Overpass nearby search ────────────────────────────── */
+function searchNearbyDoctorsAtLocation(lng, lat) {
+    nearbyMarkers.forEach(function(m) { m.remove(); });
+    nearbyMarkers = [];
 
-    placesService.nearbySearch(request, function(results, status) {
-        if (status === google.maps.places.PlacesServiceStatus.OK) {
-            displayNearbyPlaces(results, 'Cardiologists');
-        }
-    });
-    
-    // Also search for hospitals
-    var hospitalRequest = {
-        location: location,
-        radius: 5000,
-        keyword: 'cardiac hospital heart hospital cardiology',
-        type: 'hospital'
-    };
-    
-    placesService.nearbySearch(hospitalRequest, function(results, status) {
-        if (status === google.maps.places.PlacesServiceStatus.OK) {
-            displayNearbyPlaces(results, 'Cardiac Hospitals', true);
-        }
-    });
-}
-
-function displayNearbyPlaces(places, category, append = false) {
     var resultsDiv = document.getElementById('nearbyResults');
     var listDiv = document.getElementById('nearbyPlacesList');
-    
-    if (!append) {
-        listDiv.innerHTML = '';
-    }
-    
+    listDiv.innerHTML = '<div style="grid-column:1/-1;display:flex;align-items:center;gap:0.5rem;padding:1.5rem 0;color:var(--text-muted);font-size:0.875rem;"><div class="fd-spinner"></div> Searching nearby facilities…</div>';
     resultsDiv.style.display = 'block';
-    
-    // Filter only open places
-    var openPlaces = places.filter(function(place) {
-        return !place.opening_hours || place.opening_hours.open_now;
-    });
-    
-    // Limit to 6 nearest places
-    var limitedPlaces = openPlaces.slice(0, 6);
-    
-    if (limitedPlaces.length === 0) {
-        listDiv.innerHTML += '<div class="col-12"><div class="alert alert-warning">No open cardiac facilities found nearby. Try expanding your search area.</div></div>';
-        return;
-    }
-    
-    limitedPlaces.forEach(function(place) {
-        // Add marker
-        var marker = new google.maps.Marker({
-            position: place.geometry.location,
-            map: map,
-            title: place.name,
-            icon: {
-                url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-                scaledSize: new google.maps.Size(35, 35)
-            }
-        });
-        marker.nearbyPlace = true;
-        
-        // Create info window
-        var rating = place.rating ? `⭐ ${place.rating}` : 'No rating';
-        var infoWindow = new google.maps.InfoWindow({
-            content: `
-                <div style="min-width: 240px; padding: 14px; font-family: 'Inter', sans-serif;">
-                    <h6 style="margin-bottom: 10px; color: #0f172a; font-weight: 600;">
-                        <i class="fas fa-hospital" style="color: #0ea5e9;"></i> ${place.name}
-                    </h6>
-                    <p style="margin-bottom: 6px; font-size: 13px; color: #475569;">${rating}</p>
-                    <p style="margin-bottom: 6px; font-size: 13px; color: #475569;">${place.vicinity}</p>
-                    <p style="margin-bottom: 12px; color: #15803d; font-size: 13px;">🟢 Open Now</p>
-                    <button onclick="bookExternalAppointment('${place.name.replace(/'/g, "\\'")}', '${place.vicinity.replace(/'/g, "\\'")}', '', '${place.place_id}')" 
-                            class="btn btn-sm btn-primary btn-block" style="border-radius: 999px; margin-top: 4px;">
-                        <i class="fas fa-calendar-plus"></i> Book Appointment
-                    </button>
-                    <a href="https://www.google.com/maps/search/?api=1&query=${place.geometry.location.lat()},${place.geometry.location.lng()}&query_place_id=${place.place_id}" 
-                       target="_blank" class="btn btn-sm btn-outline-secondary btn-block" style="margin-top: 6px; border-radius: 999px;">
-                        <i class="fas fa-directions"></i> Directions
-                    </a>
-                </div>
-            `
-        });
-        
-        marker.addListener('click', function() {
-            infoWindows.forEach(function(iw) {
-                iw.close();
-            });
-            infoWindow.open(map, marker);
-        });
-        
-        markers.push(marker);
-        infoWindows.push(infoWindow);
-        
-        // Add to list
-        var card = `
-            <div class="col-md-6 col-lg-4 mb-3">
-                <div class="nearby-card h-100">
-                    <h6 class="text-primary mb-2">${place.name}</h6>
-                    <p class="mb-1"><small>${rating}</small></p>
-                    <p class="mb-2"><small class="text-muted"><i class="fas fa-map-marker-alt"></i> ${place.vicinity}</small></p>
-                    <p class="mb-3"><small class="text-success font-weight-bold">🟢 Open Now</small></p>
-                    <button onclick="bookExternalAppointment('${place.name.replace(/'/g, "\\'")}', '${place.vicinity.replace(/'/g, "\\'")}', '', '${place.place_id}')" 
-                            class="btn btn-primary btn-block">
-                        <i class="fas fa-calendar-plus"></i> Book Appointment
-                    </button>
-                    <a href="https://www.google.com/maps/search/?api=1&query=${place.geometry.location.lat()},${place.geometry.location.lng()}&query_place_id=${place.place_id}" 
-                       target="_blank" class="btn btn-outline-secondary btn-block mt-2">
-                        <i class="fas fa-directions"></i> Get Directions
-                    </a>
-                </div>
-            </div>
-        `;
-        listDiv.innerHTML += card;
+
+    var query = '[out:json][timeout:15];' +
+        'node["amenity"~"hospital|clinic|doctors"]["name"](around:5000,' + lat + ',' + lng + ');' +
+        'out body 12;';
+
+    fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'data=' + encodeURIComponent(query)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        listDiv.innerHTML = '';
+        var elements = (data.elements || []).slice(0, 9);
+        if (!elements.length) {
+            listDiv.innerHTML = '<div style="grid-column:1/-1;"><div class="sc-alert sc-alert-warning"><i class="fas fa-info-circle"></i> No cardiac facilities found within 5 km. Try a different location.</div></div>';
+            return;
+        }
+        elements.forEach(function(el) { renderFacilityCard(el, lng, lat); });
+    })
+    .catch(function() {
+        listDiv.innerHTML = '<div style="grid-column:1/-1;"><div class="sc-alert sc-alert-error"><i class="fas fa-exclamation-circle"></i> Could not load nearby facilities. Check your connection.</div></div>';
     });
 }
 
-// Store current booking details
-var currentBooking = {
-    name: '',
-    address: '',
-    phone: '',
-    placeId: ''
-};
+function renderFacilityCard(element, searchLng, searchLat) {
+    var tags = element.tags || {};
+    var name = tags.name || 'Unknown Facility';
+    var fLat = element.lat;
+    var fLng = element.lon;
+    var amenity = tags.amenity || 'hospital';
 
-// Function to book appointment at external facility
-function bookExternalAppointment(name, address, phone, placeId) {
-    console.log('bookExternalAppointment called:', {name, address, phone, placeId});
-    
-    // Store booking details
-    currentBooking = {
-        name: name,
-        address: address,
-        phone: phone || 'N/A',
-        placeId: placeId
-    };
-    
-    // If phone is not available AND we have a placeId, try to fetch it
-    if ((!phone || phone === 'N/A' || phone === '') && placeId && placeId !== '') {
-        console.log('Fetching phone number for place:', placeId);
-        // Show loading modal
-        $('#loadingModal').modal('show');
-        
-        // Set timeout to hide loading modal after 5 seconds
-        var timeoutId = setTimeout(function() {
-            console.log('Timeout reached, hiding loading modal');
-            $('#loadingModal').modal('hide');
-            showBookingModal();
-        }, 5000);
-        
-        // Fetch place details to get phone number
-        var request = {
-            placeId: placeId,
-            fields: ['formatted_phone_number', 'international_phone_number']
-        };
-        
-        placesService.getDetails(request, function(place, status) {
-            console.log('Place details response:', status, place);
-            clearTimeout(timeoutId); // Cancel timeout
-            $('#loadingModal').modal('hide');
-            
-            if (status === google.maps.places.PlacesServiceStatus.OK) {
-                if (place.formatted_phone_number) {
-                    currentBooking.phone = place.formatted_phone_number;
-                    console.log('Found phone:', place.formatted_phone_number);
-                } else if (place.international_phone_number) {
-                    currentBooking.phone = place.international_phone_number;
-                    console.log('Found international phone:', place.international_phone_number);
-                }
-            } else {
-                console.log('Failed to get place details:', status);
-            }
-            
-            // Show booking modal
-            showBookingModal();
-        });
+    // Build address from all available tags
+    var addrParts = [];
+    if (tags['addr:housenumber'] && tags['addr:street']) addrParts.push(tags['addr:housenumber'] + ' ' + tags['addr:street']);
+    else if (tags['addr:street']) addrParts.push(tags['addr:street']);
+    if (tags['addr:city']) addrParts.push(tags['addr:city']);
+    else if (tags['addr:place']) addrParts.push(tags['addr:place']);
+    if (tags['addr:state']) addrParts.push(tags['addr:state']);
+    var address = addrParts.join(', ');
+
+    var phone = (tags.phone || tags['contact:phone'] || tags['phone:mobile'] || '').trim();
+    var mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + fLat + ',' + fLng;
+
+    var isHospital = amenity === 'hospital';
+    var tealColor = '#3b7d6e';
+    var dotColor = isHospital ? tealColor : '#4e9e8e';
+
+    // Map marker & popup
+    var dot = makeDot(dotColor, 24);
+    var popup = new mapboxgl.Popup({ offset: 20, maxWidth: '270px' })
+        .setHTML(buildFacilityPopupHtml(name, amenity, address, phone, mapsUrl, fLat, fLng));
+    var marker = new mapboxgl.Marker(dot).setLngLat([fLng, fLat]).setPopup(popup).addTo(map);
+    nearbyMarkers.push(marker);
+
+    // List card
+    var badgeClass = isHospital ? 'sc-badge-teal' : 'sc-badge-amber';
+    var listDiv = document.getElementById('nearbyPlacesList');
+    var card = document.createElement('div');
+    card.className = 'fc-card';
+    card.innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem;">' +
+        '<span class="sc-badge ' + badgeClass + '"><i class="fas ' + (isHospital ? 'fa-hospital' : 'fa-clinic-medical') + '"></i> ' + amenity + '</span>' +
+        '</div>' +
+        '<div class="fc-card-name">' + name + '</div>' +
+        (address
+            ? '<div class="fc-card-meta"><i class="fas fa-map-marker-alt" style="color:var(--text-light);"></i><span>' + address + '</span></div>'
+            : '<div class="fc-card-meta"><a href="' + mapsUrl + '" target="_blank" style="color:var(--primary-color);font-size:0.78rem;"><i class="fas fa-map"></i> View on map</a></div>'
+        ) +
+        (phone ? '<div class="fc-card-meta"><i class="fas fa-phone" style="color:var(--text-light);"></i><span>' + phone + '</span></div>' : '') +
+        '<div class="fc-card-actions">' +
+        '<button class="sc-btn sc-btn-primary sc-btn-sm" style="flex:1;" onclick="openBookingDialog(\'' + esc(name) + '\',\'' + esc(address) + '\',\'' + esc(phone) + '\',' + fLat + ',' + fLng + ')">' +
+        '<i class="fas fa-calendar-plus"></i> Book</button>' +
+        '<a href="' + mapsUrl + '" target="_blank" class="sc-btn sc-btn-outline sc-btn-sm" style="flex:1;">' +
+        '<i class="fas fa-directions"></i> Directions</a>' +
+        '</div>';
+    listDiv.appendChild(card);
+}
+
+function buildFacilityPopupHtml(name, amenity, address, phone, mapsUrl, fLat, fLng) {
+    var tealColor = '#3b7d6e';
+    return '<div class="mp-popup">' +
+        '<div class="mp-popup-name">' + name + '</div>' +
+        '<div class="mp-popup-type" style="color:' + tealColor + ';">' + amenity + '</div>' +
+        (address ? '<div class="mp-popup-addr"><i class="fas fa-map-marker-alt" style="margin-right:4px;"></i>' + address + '</div>' : '') +
+        (phone ? '<div class="mp-popup-phone"><i class="fas fa-phone" style="margin-right:4px;"></i>' + phone + '</div>' : '') +
+        '<div class="mp-popup-actions">' +
+        '<button class="mp-popup-btn mp-popup-btn-primary" onclick="openBookingDialog(\'' + esc(name) + '\',\'' + esc(address) + '\',\'' + esc(phone) + '\',' + fLat + ',' + fLng + ')">' +
+        '<i class="fas fa-calendar-plus"></i> Book</button>' +
+        '<a href="' + mapsUrl + '" target="_blank" class="mp-popup-btn mp-popup-btn-outline"><i class="fas fa-directions"></i> Directions</a>' +
+        '</div></div>';
+}
+
+function esc(s) { return (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+
+/* ── shadcn Dialog ─────────────────────────────────────── */
+function openBookingDialog(name, address, phone, lat, lng) {
+    currentBooking = { name: name, address: address, phone: phone, lat: lat || 0, lng: lng || 0 };
+
+    document.getElementById('dlgName').textContent = name;
+
+    // Address row
+    if (address && address.trim()) {
+        document.getElementById('dlgAddress').textContent = address;
+        document.getElementById('dlgAddressRow').style.display = 'flex';
+        document.getElementById('dlgMapRow').style.display = 'none';
     } else {
-        // Show booking modal directly
-        console.log('Showing modal directly with phone:', phone);
-        showBookingModal();
+        document.getElementById('dlgAddressRow').style.display = 'none';
+        if (lat && lng) {
+            var link = document.getElementById('dlgMapLink');
+            link.href = 'https://www.google.com/maps/search/?api=1&query=' + lat + ',' + lng;
+            document.getElementById('dlgMapRow').style.display = 'flex';
+        }
     }
+
+    // Phone row
+    if (phone && phone.trim()) {
+        document.getElementById('dlgPhone').textContent = phone;
+        document.getElementById('dlgPhoneRow').style.display = 'flex';
+    } else {
+        document.getElementById('dlgPhoneRow').style.display = 'none';
+    }
+
+    document.getElementById('bookingOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
 }
 
-// Show booking modal with current booking details
-function showBookingModal() {
-    console.log('showBookingModal called with:', currentBooking);
-    
-    // Make sure loading modal is hidden first
-    $('#loadingModal').modal('hide');
-    
-    // Small delay to ensure loading modal is fully hidden
-    setTimeout(function() {
-        document.getElementById('modalHospitalName').textContent = currentBooking.name;
-        document.getElementById('modalHospitalAddress').textContent = currentBooking.address;
-        document.getElementById('modalHospitalPhone').textContent = currentBooking.phone;
-        
-        console.log('Attempting to show modal...');
-        $('#bookingModal').modal('show');
-    }, 300);
+function closeBookingDialog(e) {
+    if (e && e.target !== document.getElementById('bookingOverlay')) return;
+    document.getElementById('bookingOverlay').classList.remove('open');
+    document.body.style.overflow = '';
 }
 
-// Confirm AI booking
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeBookingDialog();
+});
+
 function confirmAIBooking() {
-    $('#bookingModal').modal('hide');
-    
-    if (!currentBooking.phone || currentBooking.phone === 'N/A') {
-        alert('Phone number not available for AI booking. Please try calling manually or visit the location.');
-        return;
-    }
-    
-    aiBookAppointment(currentBooking.name, currentBooking.address, currentBooking.phone);
+    closeBookingDialog();
+    // Always proceed — backend uses TEST_PHONE_NUMBER as fallback when facility phone is unavailable
+    var phone = currentBooking.phone || '';
+    submitAIBookingForm(currentBooking.name, currentBooking.address, phone);
 }
 
-// Confirm manual call
 function confirmManualCall() {
-    $('#bookingModal').modal('hide');
-    
-    if (currentBooking.phone && currentBooking.phone !== 'N/A') {
+    closeBookingDialog();
+    if (currentBooking.phone) {
         window.location.href = 'tel:' + currentBooking.phone;
     } else {
-        alert('Phone number not available. Please visit the location or search online for contact details.');
+        alert('Phone number not available. Please visit the location or search online.');
     }
 }
 
-// Function to use AI agent for booking
-function aiBookAppointment(name, address, phone) {
-    if (!phone || phone === 'N/A') {
-        alert('Phone number not available for AI booking.');
-        return;
-    }
-    
-    // Create form and submit
+function submitAIBookingForm(name, address, phone) {
     var form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/ai_book_appointment';
-    
-    // Add CSRF token
-    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-    if (csrfToken) {
-        var csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrfmiddlewaretoken';
-        csrfInput.value = csrfToken.value;
-        form.appendChild(csrfInput);
-    }
-    
-    // Add hospital details
-    var fields = {
-        'hospital_name': name,
-        'hospital_phone': phone,
-        'hospital_address': address
-    };
-    
-    for (var key in fields) {
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = fields[key];
-        form.appendChild(input);
-    }
-    
-    document.body.appendChild(form);
-    form.submit();
+    form.method = 'POST'; form.action = '/ai_book_appointment';
+    var csrf = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrf) { var ci = document.createElement('input'); ci.type='hidden'; ci.name='csrfmiddlewaretoken'; ci.value=csrf.value; form.appendChild(ci); }
+    [['hospital_name', name], ['hospital_phone', phone], ['hospital_address', address]].forEach(function(pair) {
+        var inp = document.createElement('input'); inp.type='hidden'; inp.name=pair[0]; inp.value=pair[1]; form.appendChild(inp);
+    });
+    document.body.appendChild(form); form.submit();
 }
 
-// Add click event to cards to show marker
+/* ── Doctor card → map marker ──────────────────────────── */
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('[data-marker-index]').forEach(function(card) {
         card.addEventListener('click', function(e) {
-            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') {
-                return;
-            }
-
-            var markerIndex = parseInt(card.getAttribute('data-marker-index'), 10);
-            if (!isNaN(markerIndex) && markers[markerIndex]) {
-                infoWindows.forEach(function(iw) {
-                    iw.close();
-                });
-                infoWindows[markerIndex].open(map, markers[markerIndex]);
-                map.setCenter(markers[markerIndex].getPosition());
-                map.setZoom(15);
-                markers[markerIndex].setAnimation(google.maps.Animation.BOUNCE);
-                setTimeout(function() {
-                    markers[markerIndex].setAnimation(null);
-                }, 2000);
+            if (e.target.closest('a, button')) return;
+            var idx = parseInt(card.getAttribute('data-marker-index'), 10);
+            if (!isNaN(idx) && markerObjects[idx]) {
+                popupObjects.forEach(function(p) { if (p) p.remove(); });
+                map.flyTo({ center: markerObjects[idx].getLngLat(), zoom: 15 });
+                markerObjects[idx].togglePopup();
             }
         });
     });
-});
 
-document.addEventListener('DOMContentLoaded', function() {
-    if (!googleMapsKey) {
-        renderMapError('Google Maps is not configured. Please contact support to add the Maps API key.');
-        return;
-    }
+    if (!MAPBOX_TOKEN) { renderMapError('Map not configured. Add MAPBOX_API_KEY to .env.'); return; }
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.css';
+    document.head.appendChild(link);
 
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsKey}&libraries=places&callback=initMap`;
-    script.async = true;
-    script.defer = true;
-    script.onerror = function() {
-        console.error('Google Maps failed to load');
-        renderMapError('We couldn\'t load Google Maps right now. Please refresh the page or try again later.');
-    };
+    var script = document.createElement('script');
+    script.src = 'https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.js';
+    script.onload = initMapbox;
+    script.onerror = function() { renderMapError('Map failed to load. Please refresh the page.'); };
     document.head.appendChild(script);
 });
 </script>
-
-<!-- Bootstrap JS for modals -->
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"></script>
 
 {% endblock %}

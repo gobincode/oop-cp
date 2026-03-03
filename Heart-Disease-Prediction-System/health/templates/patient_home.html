@@ -18,19 +18,22 @@
             </p>
 
             <div class="action-grid">
-                <div class="action-card" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                <div class="action-card" style="background: linear-gradient(135deg, #1c1208 0%, #5c3d2e 100%);">
                     <h4>🩺 Quick Actions</h4>
                     <ul>
                         <li><a href="/add_heartdetail"><span class="fas fa-chart-line"></span> Predict Heart Disease Risk</a></li>
                         <li><a href="/upload_ecg"><span class="fas fa-wave-square"></span> Analyze ECG Image</a></li>
                         <li><a href="/my_appointments"><span class="fas fa-calendar"></span> Manage Appointments</a></li>
                         <li><a href="/find_doctors"><span class="fas fa-user-md"></span> Find Cardiologists</a></li>
+                        <li><a href="{% url 'medical_chat' %}"><span class="fas fa-robot"></span> AI Health Assistant</a></li>
                     </ul>
                 </div>
 
-                <div class="action-card" style="background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);">
+                <div class="action-card" style="background: linear-gradient(135deg, #3d2619 0%, #7a5a46 100%);">
                     <h4>📂 My Records</h4>
                     <ul>
+                        <li><a href="{% url 'health_trends' %}"><span class="fas fa-chart-line"></span> Health Risk Trends</a></li>
+                        <li><a href="{% url 'download_health_report' %}"><span class="fas fa-file-pdf"></span> Download PDF Report</a></li>
                         <li><a href="/view_search_pat"><span class="fas fa-history"></span> Prediction History</a></li>
                         <li><a href="/ecg_history"><span class="fas fa-heart"></span> ECG History</a></li>
                         <li><a href="/profile_doctor"><span class="fas fa-id-card"></span> View My Profile</a></li>
@@ -38,7 +41,7 @@
                     </ul>
                 </div>
 
-                <div class="action-card" style="background: linear-gradient(135deg, #f97316 0%, #f43f5e 100%);">
+                <div class="action-card" style="background: linear-gradient(135deg, #4a3020 0%, #9e7c66 100%);">
                     <h4>❤️ Heart Health Tips</h4>
                     <ul class="tips-list">
                         <li>Exercise 30 minutes daily</li>

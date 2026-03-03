@@ -16,37 +16,54 @@ The AI can:
 """
 
 import os
+import urllib.request
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse, Gather
 from django.conf import settings
 import json
 from datetime import datetime
-import google.generativeai as genai
+
+CLAUDE_API_URL = 'https://api.quatarly.cloud/v1/messages'
+CLAUDE_MODEL = 'claude-sonnet-4-6-thinking'
+
+def call_claude(system_prompt: str, user_message: str, api_key: str, max_tokens: int = 200) -> str:
+    """Call the Anthropic-compatible Claude API."""
+    payload = json.dumps({
+        'model': CLAUDE_MODEL,
+        'max_tokens': max_tokens,
+        'system': system_prompt,
+        'messages': [{'role': 'user', 'content': user_message}]
+    }).encode()
+    req = urllib.request.Request(
+        CLAUDE_API_URL,
+        data=payload,
+        headers={
+            'Content-Type': 'application/json',
+            'x-api-key': api_key,
+            'anthropic-version': '2023-06-01'
+        }
+    )
+    with urllib.request.urlopen(req, timeout=15) as r:
+        data = json.loads(r.read())
+    return data['content'][0]['text'].strip()
+
 
 class AICallingAgent:
     """
     AI Agent that calls hospitals to book cardiac appointments
-    Uses Gemini 2.5 Flash for intelligent conversation handling
+    Uses Claude (Anthropic-compatible) for intelligent conversation handling
     """
     
     def __init__(self):
-        # Load credentials from environment variables
         self.account_sid = os.getenv('TWILIO_ACCOUNT_SID')
         self.auth_token = os.getenv('TWILIO_AUTH_TOKEN')
         self.phone_number = os.getenv('TWILIO_PHONE_NUMBER')
-        self.gemini_api_key = os.getenv('GEMINI_API_KEY')
+        self.claude_api_key = os.getenv('CLAUDE_API_KEY')
         
         if self.account_sid and self.auth_token:
             self.client = Client(self.account_sid, self.auth_token)
         else:
             self.client = None
-        
-        # Initialize Gemini AI
-        if self.gemini_api_key:
-            genai.configure(api_key=self.gemini_api_key)
-            self.gemini_model = genai.GenerativeModel('gemini-2.0-flash')
-        else:
-            self.gemini_model = None
         
         # Conversation context storage (in production, use Redis/database)
         self.conversation_history = {}
@@ -78,9 +95,12 @@ class AICallingAgent:
         if test_number:
             hospital_phone = test_number  # Override with test number for development
         
-        # Check if we have a public URL for interactive AI conversation
-        base_url = getattr(settings, 'BASE_URL', None)
-        use_interactive_ai = base_url and ('ngrok' in base_url or 'herokuapp' in base_url or 'render' in base_url)
+        # Check if we have a live public URL for interactive AI conversation
+        base_url = getattr(settings, 'BASE_URL', '') or ''
+        base_url = base_url.rstrip('/')
+        use_interactive_ai = bool(base_url) and any(
+            kw in base_url for kw in ('ngrok', 'ngrok-free', 'herokuapp', 'render', 'appspot', 'railway', 'vercel')
+        )
         
         try:
             if use_interactive_ai:
@@ -127,13 +147,17 @@ class AICallingAgent:
             print(f"   To: {call.to}")
             print(f"   From: {call._from}")
             
-            # Store patient data for this call
-            self.conversation_history[call.sid] = {
-                'patient_data': patient_data,
-                'appointment_details': appointment_details,
-                'messages': []
-            }
-            
+            # Persist call metadata in cache so call_status webhook can retrieve it
+            from django.core.cache import cache
+            cache.set(f'call_data_{call.sid}', {
+                'patient_contact': patient_data.get('contact', ''),
+                'patient_name': patient_data.get('name', ''),
+                'hospital_name': appointment_details.get('hospital_name', ''),
+                'hospital_phone': hospital_phone,
+                'hospital_address': appointment_details.get('hospital_address', ''),
+                'reason': appointment_details.get('reason', ''),
+            }, timeout=7200)
+
             return call.sid
         
         except Exception as e:
@@ -230,84 +254,91 @@ class AICallingAgent:
         
         return script
     
+    def _get_history(self, call_sid):
+        from django.core.cache import cache
+        return cache.get(f'call_history_{call_sid}', [])
+
+    def _save_history(self, call_sid, history):
+        from django.core.cache import cache
+        cache.set(f'call_history_{call_sid}', history, timeout=3600)
+
+    def _extract_and_cache_booking(self, call_sid, history):
+        """Ask Claude to extract structured appointment details from conversation and cache them."""
+        from django.core.cache import cache
+        import json as _json
+        conversation_text = '\n'.join(history[-12:])
+        extract_system = (
+            'Extract appointment details from this call transcript. '
+            'Return ONLY valid JSON with keys: date_str, time_str, doctor_name, department. '
+            'For date_str use plain English like "tomorrow" or "March 5". '
+            'Leave a key empty string if not mentioned.'
+        )
+        try:
+            raw = call_claude(extract_system, conversation_text, self.claude_api_key, max_tokens=120)
+            raw = raw.strip().lstrip('```json').lstrip('```').rstrip('```').strip()
+            details = _json.loads(raw)
+        except Exception as e:
+            print(f'Booking detail extraction failed: {e}')
+            details = {}
+        cache.set(f'call_booking_{call_sid}', details, timeout=7200)
+        print(f'Cached booking details for {call_sid}: {details}')
+
     def generate_ai_response(self, call_sid, user_speech, patient_data, conversation_stage):
         """
-        Use Gemini AI to generate intelligent responses based on conversation context
+        Use Claude AI to generate intelligent responses based on conversation context.
+        Returns (response_text, is_done) tuple.
         """
-        if not self.gemini_model:
-            return self._fallback_response(conversation_stage)
-        
-        # Get conversation history
-        if call_sid not in self.conversation_history:
-            self.conversation_history[call_sid] = []
-        
-        history = self.conversation_history[call_sid]
-        
-        # Build context for Gemini
-        system_prompt = f"""You are a professional medical appointment booking assistant calling a hospital/clinic on behalf of a patient.
+        if not self.claude_api_key:
+            return self._fallback_response(conversation_stage), False
 
-Patient Information:
-- Name: {patient_data.get('name', 'Not provided')}
-- Contact: {patient_data.get('contact', 'Not provided')}
-- Reason: {patient_data.get('reason', 'Cardiac consultation')}
-- Medical History: Recent ECG analysis showed concerning cardiac results
+        history = self._get_history(call_sid)
 
-Your Goals:
-1. Book an appointment for the patient
-2. Get available dates and times
-3. Confirm appointment details
-4. Provide patient contact information when asked
+        system_prompt = f"""You are a concise medical appointment booking assistant calling a hospital on behalf of a patient.
 
-Conversation Guidelines:
-- Be polite, professional, and concise
-- Answer questions directly and clearly
-- If asked about patient details, provide the information above
-- If asked about urgency, mention the ECG results are concerning
-- If they need to call back, provide the patient's contact number
-- Keep responses under 50 words
-- Sound natural and human-like
+Patient: {patient_data.get('name', 'the patient')}
+Contact: {patient_data.get('contact', 'not provided')}
+Reason: Cardiac consultation - recent ECG showed concerning results
 
-Current Stage: {conversation_stage}
-Hospital Staff Said: "{user_speech}"
+Rules:
+- Maximum 2 sentences per reply. Be direct and efficient.
+- Ask only ONE question at a time.
+- Do NOT repeat information already confirmed.
+- When the appointment date and time are confirmed, say a brief thank you and goodbye, then end your reply with [BOOKING_COMPLETE].
+- If they ask for the patient's contact, provide it.
+- Never re-introduce yourself after the greeting."""
 
-Respond appropriately to continue the conversation."""
+        history.append(f"Staff: {user_speech}")
+        user_message = "Conversation history:\n" + "\n".join(history[-8:]) + "\n\nYour reply:"
 
         try:
-            # Add user speech to history
-            history.append(f"Hospital Staff: {user_speech}")
-            
-            # Generate response using Gemini
-            chat = self.gemini_model.start_chat(history=[])
-            full_context = system_prompt + "\n\nConversation so far:\n" + "\n".join(history[-5:])
-            
-            response = chat.send_message(full_context)
-            ai_response = response.text.strip()
-            
-            # Clean up response (remove quotes, asterisks, etc.)
+            ai_response = call_claude(system_prompt, user_message, self.claude_api_key, max_tokens=120)
             ai_response = ai_response.replace('"', '').replace('*', '').strip()
-            
-            # Limit length
-            if len(ai_response) > 300:
-                ai_response = ai_response[:297] + "..."
-            
-            # Add to history
-            history.append(f"AI Assistant: {ai_response}")
-            self.conversation_history[call_sid] = history
-            
-            return ai_response
-            
+
+            is_done = '[BOOKING_COMPLETE]' in ai_response
+            ai_response = ai_response.replace('[BOOKING_COMPLETE]', '').strip()
+
+            if len(ai_response) > 280:
+                ai_response = ai_response[:277] + '...'
+
+            history.append(f"Assistant: {ai_response}")
+            self._save_history(call_sid, history)
+
+            if is_done:
+                self._extract_and_cache_booking(call_sid, history)
+
+            return ai_response, is_done
         except Exception as e:
-            print(f"Gemini AI error: {str(e)}")
-            return self._fallback_response(conversation_stage)
+            print(f"Claude AI error: {str(e)}")
+            return self._fallback_response(conversation_stage), False
     
     def _fallback_response(self, stage):
-        """Fallback responses if Gemini is unavailable"""
+        """Fallback responses if Claude is unavailable"""
         fallbacks = {
             'greeting': "Hello, I'm calling to book a cardiac consultation appointment. Is this the appointment desk?",
             'provide_details': "I need to book an appointment for a patient with concerning ECG results. What dates are available?",
             'confirm': "Thank you. The patient will call to confirm. Have a great day!",
         }
-        return fallbacks.get(stage, "Thank you for your time. Goodbye.")
+        return fallbacks.get(stage, "Thank you for your time. Goodbye."), False
     
     def create_twiml_response(self, stage='greeting', data=None, call_sid=None):
         """
@@ -352,47 +383,50 @@ Respond appropriately to continue the conversation."""
             response.hangup()
         
         elif stage == 'conversation':
-            # AI-powered conversation
+            import urllib.parse
             user_speech = data.get('SpeechResult', '')
             patient_data = data.get('patient_data', {})
-            
+
+            # Build params to carry patient context through every turn
+            params = urllib.parse.urlencode({
+                'patient_name': patient_data.get('name', ''),
+                'patient_contact': patient_data.get('contact', ''),
+                'reason': patient_data.get('reason', ''),
+            })
+            next_action = f'/ai_call_handler/?stage=conversation&call_sid={call_sid}&{params}'
+
             if user_speech:
-                # Generate intelligent response using Gemini
-                ai_message = self.generate_ai_response(
-                    call_sid,
-                    user_speech,
-                    patient_data,
-                    'conversation'
+                ai_message, is_done = self.generate_ai_response(
+                    call_sid, user_speech, patient_data, 'conversation'
                 )
-                
                 response.say(ai_message, voice='Polly.Joanna', language='en-US')
-                
-                # Check if conversation should end
-                end_phrases = ['goodbye', 'thank you', 'bye', 'call back', 'will call']
-                if any(phrase in user_speech.lower() for phrase in end_phrases):
-                    response.say("Thank you for your assistance. Have a great day!", voice='Polly.Joanna')
+
+                if is_done:
                     response.hangup()
                 else:
-                    # Continue conversation
                     gather = Gather(
                         input='speech',
-                        action=f'/ai_call_handler/?stage=conversation&call_sid={call_sid}',
+                        action=next_action,
                         method='POST',
                         timeout=5,
                         speech_timeout='auto',
                         language='en-US'
                     )
                     response.append(gather)
+                    response.say("I didn't catch that. Goodbye.", voice='Polly.Joanna')
+                    response.hangup()
             else:
                 response.say("I didn't catch that. Could you please repeat?", voice='Polly.Joanna')
                 gather = Gather(
                     input='speech',
-                    action=f'/ai_call_handler/?stage=conversation&call_sid={call_sid}',
+                    action=next_action,
                     method='POST',
                     timeout=5,
-                    speech_timeout='auto'
+                    speech_timeout='auto',
+                    language='en-US'
                 )
                 response.append(gather)
+                response.hangup()
         
         elif stage == 'confirm_appointment':
             # Final confirmation

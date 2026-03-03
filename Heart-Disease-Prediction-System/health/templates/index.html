@@ -77,12 +77,13 @@
 		position: absolute;
 		top: 100%;
 		right: 0;
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		background: linear-gradient(135deg, #1c1208 0%, #3d2619 50%, #5c3d2e 100%);
 		padding: 20px !important;
 		border-radius: 8px;
-		box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+		box-shadow: 0 8px 16px rgba(28,18,8,0.3);
 		min-width: 250px;
 		z-index: 1000;
+		background: linear-gradient(135deg, #1c1208 0%, #3d2619 50%, #5c3d2e 100%) !important;
 	}
 	
 	.nav_w3ls input[type="checkbox"]:checked ~ .menu {
@@ -182,7 +183,7 @@ $(document).ready(function() {
 		<!-- //top header -->
 
 		<!-- second header -->
-		<div class="main-top" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+		<div class="main-top" style="background: linear-gradient(135deg, #1c1208 0%, #3d2619 50%, #5c3d2e 100%); box-shadow: 0 4px 12px rgba(28,18,8,0.25);">
 			<div class="container-fluid">
 				<div class="header d-flex justify-content-between align-items-center py-3 px-4">
 					<!-- logo -->
@@ -298,6 +299,16 @@ $(document).ready(function() {
 										<i class="fa fa-calendar mr-2"></i>Appointments
 									</a>
 								</li>
+								<li style="margin: 0 12px;">
+									<a href="{% url 'health_trends' %}" style="color: white; text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 6px; background: rgba(255,255,255,0.15); transition: all 0.3s;">
+										<i class="fa fa-chart-line mr-2"></i>Trends
+									</a>
+								</li>
+								<li style="margin: 0 12px;">
+									<a href="/medical_chat" style="color: white; text-decoration: none; font-weight: 600; padding: 8px 16px; border-radius: 6px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); transition: all 0.3s;">
+										<i class="fa fa-robot mr-2"></i>AI Chat
+									</a>
+								</li>
 								<li style="margin: 0 12px; position: relative;" class="dropdown-nav">
 									<a href="#" style="color: white; text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 6px; transition: all 0.3s;">
 										<i class="fa fa-history mr-2"></i>History <span class="fa fa-angle-down ml-1"></span>
@@ -311,6 +322,11 @@ $(document).ready(function() {
 										<li style="width: 100%;">
 											<a href="/ecg_history" style="display: block; padding: 10px 20px; color: #333; text-decoration: none; transition: all 0.2s;">
 												<i class="fa fa-heartbeat mr-2"></i>ECG History
+											</a>
+										</li>
+										<li style="width: 100%;">
+											<a href="/medical_documents" style="display: block; padding: 10px 20px; color: #333; text-decoration: none; transition: all 0.2s;">
+												<i class="fa fa-file-medical mr-2"></i>My Documents
 											</a>
 										</li>
 									</ul>
@@ -420,7 +436,7 @@ $(document).ready(function() {
 									</ul>
 								</li>
 								<li style="margin: 0 0 0 15px;">
-									<a href="{% url 'signup' %}" style="color: #667eea; background: white; text-decoration: none; font-weight: 600; padding: 10px 24px; border-radius: 6px; transition: all 0.3s; display: inline-block;">
+									<a href="{% url 'signup' %}" style="color: #5c3d2e; background: #faf7f0; text-decoration: none; font-weight: 600; padding: 10px 24px; border-radius: 6px; transition: all 0.3s; display: inline-block;">
 										<i class="fa fa-user-plus mr-2"></i>Sign Up
 									</a>
 								</li>
@@ -446,7 +462,7 @@ $(document).ready(function() {
 
 	<!-- footer bottom -->
 	<!-- copyright -->
-	<div class="copy-w3pvt">
+	<div class="copy-w3pvt" style="background: linear-gradient(135deg, #1c1208 0%, #3d2619 50%, #5c3d2e 100%) !important;">
 		<div class="container py-3">
 			<div class="row">
 				<div class="col-lg-7 w3ls_footer_grid1_left text-lg-left text-center">
@@ -472,6 +488,21 @@ $(document).ready(function() {
 		</div>
 	</div>
 	<a href="#home" style="color:white" class="move-top text-center"></a>
+
+	{% if request.user.patient_set.all.0 %}
+	<a href="/medical_chat" id="fab-chat"
+	   style="position:fixed; bottom:28px; right:28px; z-index:9999;
+	          width:56px; height:56px; border-radius:50%;
+	          background:linear-gradient(135deg,#5c3d2e,#3d2619);
+	          color:#faf7f0; display:flex; align-items:center; justify-content:center;
+	          font-size:1.4rem; box-shadow:0 4px 20px rgba(28,18,8,0.35);
+	          text-decoration:none; transition:transform 0.2s, box-shadow 0.2s;"
+	   title="AI Health Assistant"
+	   onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(28,18,8,0.45)'"
+	   onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(28,18,8,0.35)'">
+		<i class="fas fa-robot"></i>
+	</a>
+	{% endif %}
 
 </body>
 

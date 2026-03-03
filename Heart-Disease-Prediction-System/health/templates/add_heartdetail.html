@@ -1,102 +1,443 @@
 {% extends 'index.html' %}
 {% load static %}
 {% block body %}
-	<section class="logins py-5">
-		<div class="container py-xl-5 py-lg-3">
-			<div class="title-section mb-md-5 mb-4 text-center fade-in">
-				<h3 class="w3ls-title text-uppercase font-weight-bold">Heart Disease Risk Assessment</h3>
-				<p class="mt-3" style="color: #64748b;">Enter your health parameters for analysis</p>
-			</div>
-			<div class="row justify-content-center">
-				<div class="col-lg-11">
-					<div class="dashboard-card fade-in">
-						<form action="" method="post" enctype="multipart/form-data">
-							{% csrf_token %}
-							<h5 class="mb-4" style="color: #6366f1; border-left: 4px solid #6366f1; padding-left: 1rem;">
-								<i class="fa fa-user mr-2"></i>Basic Information
-							</h5>
-							<div class="row mb-4">
-								<div class="col-md-4 mb-3">
-									<label>Age <small style="color: #94a3b8;">(years)</small></label>
-									<input type="number" class="form-control" name="age" placeholder="e.g., 45" required="">
-								</div>
-								<div class="col-md-4 mb-3">
-									<label>Sex <small style="color: #94a3b8;">(0: Female, 1: Male)</small></label>
-									<input type="number" class="form-control" name="sex" min="0" max="1" placeholder="0 or 1" required="">
-								</div>
-								<div class="col-md-4 mb-3">
-									<label>Chest Pain Type <small style="color: #94a3b8;">(0-3)</small></label>
-									<input type="number" class="form-control" name="cp" min="0" max="3" placeholder="0, 1, 2, or 3" required="">
-								</div>
-							</div>
 
-							<h5 class="mb-4" style="color: #6366f1; border-left: 4px solid #6366f1; padding-left: 1rem;">
-								<i class="fa fa-heartbeat mr-2"></i>Vital Signs
-							</h5>
-							<div class="row mb-4">
-								<div class="col-md-4 mb-3">
-									<label>Resting Blood Pressure <small style="color: #94a3b8;">(mm Hg)</small></label>
-									<input type="number" class="form-control" name="trestbps" placeholder="e.g., 120" required="">
-								</div>
-								<div class="col-md-4 mb-3">
-									<label>Cholesterol <small style="color: #94a3b8;">(mg/dl)</small></label>
-									<input type="number" class="form-control" name="chole" placeholder="e.g., 200" required="">
-								</div>
-								<div class="col-md-4 mb-3">
-									<label>Fasting Blood Sugar <small style="color: #94a3b8;">(0: <120mg/dl, 1: >120mg/dl)</small></label>
-									<input type="number" class="form-control" name="fbs" min="0" max="1" placeholder="0 or 1" required="">
-								</div>
-							</div>
+<style>
+/* shadcn Input */
+.shad-input {
+    width: 100%;
+    background: #faf7f0;
+    border: 1.5px solid #e8ddd0;
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.92rem;
+    color: #1c1208;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+.shad-input:focus {
+    border-color: #5c3d2e;
+    box-shadow: 0 0 0 3px rgba(92,61,46,0.12);
+}
 
-							<h5 class="mb-4" style="color: #6366f1; border-left: 4px solid #6366f1; padding-left: 1rem;">
-								<i class="fa fa-stethoscope mr-2"></i>Diagnostic Tests
-							</h5>
-							<div class="row mb-4">
-								<div class="col-md-4 mb-3">
-									<label>Resting ECG <small style="color: #94a3b8;">(0-2)</small></label>
-									<input type="number" class="form-control" name="restecg" min="0" max="2" placeholder="0, 1, or 2" required="">
-								</div>
-								<div class="col-md-4 mb-3">
-									<label>Max Heart Rate <small style="color: #94a3b8;">(bpm)</small></label>
-									<input type="number" class="form-control" name="thalach" placeholder="e.g., 150" required="">
-								</div>
-								<div class="col-md-4 mb-3">
-									<label>Exercise Induced Angina <small style="color: #94a3b8;">(0: No, 1: Yes)</small></label>
-									<input type="number" class="form-control" name="exang" min="0" max="1" placeholder="0 or 1" required="">
-								</div>
-							</div>
+/* shadcn Label + Tooltip */
+.shad-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #3d2619;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+}
+.shad-tooltip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+.shad-tooltip .tip-icon {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #e8ddd0;
+    color: #8a7060;
+    font-size: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    font-style: normal;
+    font-weight: 700;
+}
+.shad-tooltip .tip-text {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1c1208;
+    color: #faf7f0;
+    font-size: 0.75rem;
+    font-weight: 400;
+    padding: 5px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 100;
+    text-transform: none;
+    letter-spacing: 0;
+    pointer-events: none;
+}
+.shad-tooltip:hover .tip-text { display: block; }
 
-							<h5 class="mb-4" style="color: #6366f1; border-left: 4px solid #6366f1; padding-left: 1rem;">
-								<i class="fa fa-line-chart mr-2"></i>Additional Parameters
-							</h5>
-							<div class="row mb-4">
-								<div class="col-md-3 mb-3">
-									<label>ST Depression (Oldpeak)</label>
-									<input type="number" step="0.1" class="form-control" name="old_peak" placeholder="e.g., 1.5" required="">
-								</div>
-								<div class="col-md-3 mb-3">
-									<label>Slope <small style="color: #94a3b8;">(0-2)</small></label>
-									<input type="number" class="form-control" name="slope" min="0" max="2" placeholder="0, 1, or 2" required="">
-								</div>
-								<div class="col-md-3 mb-3">
-									<label>Major Vessels <small style="color: #94a3b8;">(0-3)</small></label>
-									<input type="number" class="form-control" name="ca" min="0" max="3" placeholder="0-3" required="">
-								</div>
-								<div class="col-md-3 mb-3">
-									<label>Thalassemia <small style="color: #94a3b8;">(0-3)</small></label>
-									<input type="number" class="form-control" name="thal" min="0" max="3" placeholder="0-3" required="">
-								</div>
-							</div>
+/* shadcn Select */
+.shad-select {
+    width: 100%;
+    background: #faf7f0;
+    border: 1.5px solid #e8ddd0;
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.92rem;
+    color: #1c1208;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a7060' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+.shad-select:focus {
+    border-color: #5c3d2e;
+    box-shadow: 0 0 0 3px rgba(92,61,46,0.12);
+}
 
-							<div class="text-center mt-4">
-								<button type="submit" class="btn submit" style="padding: 1rem 3rem; font-size: 1rem;">
-									<i class="fa fa-calculator mr-2"></i>Analyze Heart Health
-								</button>
-							</div>
-						</form>
-					</div>
-				</div>
-			</div>
-		</div>
-	</section>
+/* shadcn Radio-Group (pill toggles) */
+.shad-radio-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.shad-radio-group input[type="radio"] { display: none; }
+.shad-radio-group label {
+    padding: 6px 16px;
+    border: 1.5px solid #e8ddd0;
+    border-radius: 99px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #5c4a3a;
+    background: #faf7f0;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin: 0;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.shad-radio-group input[type="radio"]:checked + label {
+    background: #5c3d2e;
+    border-color: #5c3d2e;
+    color: #faf7f0;
+}
+.shad-radio-group label:hover {
+    border-color: #9e7c66;
+    background: #f5f0e4;
+}
+.shad-radio-group input[type="radio"]:checked + label:hover {
+    background: #3d2619;
+    border-color: #3d2619;
+    color: #faf7f0;
+}
+</style>
+
+<section class="logins py-5">
+    <div class="container py-xl-5 py-lg-3">
+        <div class="title-section mb-md-5 mb-4 text-center fade-in">
+            <h3 class="w3ls-title text-uppercase font-weight-bold">Heart Disease Risk Assessment</h3>
+            <p class="mt-3" style="color: #8a7060;">Enter your health parameters for analysis</p>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-11">
+                <div class="dashboard-card fade-in">
+                    <form action="" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Basic Information -->
+                        <h5 class="mb-4" style="color:#5c3d2e; border-left:4px solid #5c3d2e; padding-left:1rem;">
+                            <i class="fa fa-user mr-2"></i>Basic Information
+                        </h5>
+                        <div class="row mb-4">
+                            <div class="col-md-4 mb-3">
+                                <label class="shad-label">
+                                    Age
+                                    <span class="shad-tooltip"><i class="tip-icon">?</i><span class="tip-text">Patient age in years</span></span>
+                                </label>
+                                <input type="number" class="shad-input" name="age" placeholder="e.g., 45" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="shad-label">
+                                    Sex
+                                    <span class="shad-tooltip"><i class="tip-icon">?</i><span class="tip-text">Biological sex of the patient</span></span>
+                                </label>
+                                <div class="shad-radio-group">
+                                    <input type="radio" name="sex" id="sex_f" value="0" required>
+                                    <label for="sex_f">Female</label>
+                                    <input type="radio" name="sex" id="sex_m" value="1">
+                                    <label for="sex_m">Male</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="shad-label">
+                                    Chest Pain Type
+                                    <span class="shad-tooltip"><i class="tip-icon">?</i><span class="tip-text">Type of chest pain experienced</span></span>
+                                </label>
+                                <select class="shad-select" name="cp" required>
+                                    <option value="" disabled selected>Select type...</option>
+                                    <option value="0">0 — Typical Angina</option>
+                                    <option value="1">1 — Atypical Angina</option>
+                                    <option value="2">2 — Non-Anginal Pain</option>
+                                    <option value="3">3 — Asymptomatic</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Vital Signs -->
+                        <h5 class="mb-4" style="color:#5c3d2e; border-left:4px solid #5c3d2e; padding-left:1rem;">
+                            <i class="fa fa-heartbeat mr-2"></i>Vital Signs
+                        </h5>
+                        <div class="row mb-4">
+                            <div class="col-md-4 mb-3">
+                                <label class="shad-label">
+                                    Resting Blood Pressure
+                                    <span class="shad-tooltip"><i class="tip-icon">?</i><span class="tip-text">Resting BP on admission (mm Hg)</span></span>
+                                </label>
+                                <input type="number" class="shad-input" name="trestbps" placeholder="e.g., 120" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="shad-label">
+                                    Cholesterol
+                                    <span class="shad-tooltip"><i class="tip-icon">?</i><span class="tip-text">Serum cholesterol in mg/dl</span></span>
+                                </label>
+                                <input type="number" class="shad-input" name="chole" placeholder="e.g., 200" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="shad-label">
+                                    Fasting Blood Sugar
+                                    <span class="shad-tooltip"><i class="tip-icon">?</i><span class="tip-text">Is fasting blood sugar &gt; 120 mg/dl?</span></span>
+                                </label>
+                                <div class="shad-radio-group">
+                                    <input type="radio" name="fbs" id="fbs_no" value="0" required>
+                                    <label for="fbs_no">No (&lt;120 mg/dl)</label>
+                                    <input type="radio" name="fbs" id="fbs_yes" value="1">
+                                    <label for="fbs_yes">Yes (&gt;120 mg/dl)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Diagnostic Tests -->
+                        <h5 class="mb-4" style="color:#5c3d2e; border-left:4px solid #5c3d2e; padding-left:1rem;">
+                            <i class="fa fa-stethoscope mr-2"></i>Diagnostic Tests
+                        </h5>
+                        <div class="row mb-4">
+                            <div class="col-md-4 mb-3">
+                                <label class="shad-label">
+                                    Resting ECG
+                                    <span class="shad-tooltip"><i class="tip-icon">?</i><span class="tip-text">Resting electrocardiographic results</span></span>
+                                </label>
+                                <select class="shad-select" name="restecg" required>
+                                    <option value="" disabled selected>Select result...</option>
+                                    <option value="0">0 — Normal</option>
+                                    <option value="1">1 — ST-T Wave Abnormality</option>
+                                    <option value="2">2 — Left Ventricular Hypertrophy</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="shad-label">
+                                    Max Heart Rate
+                                    <span class="shad-tooltip"><i class="tip-icon">?</i><span class="tip-text">Maximum heart rate achieved (bpm)</span></span>
+                                </label>
+                                <input type="number" class="shad-input" name="thalach" placeholder="e.g., 150" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="shad-label">
+                                    Exercise Induced Angina
+                                    <span class="shad-tooltip"><i class="tip-icon">?</i><span class="tip-text">Chest pain triggered by exercise?</span></span>
+                                </label>
+                                <div class="shad-radio-group">
+                                    <input type="radio" name="exang" id="exang_no" value="0" required>
+                                    <label for="exang_no">No</label>
+                                    <input type="radio" name="exang" id="exang_yes" value="1">
+                                    <label for="exang_yes">Yes</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Parameters -->
+                        <h5 class="mb-4" style="color:#5c3d2e; border-left:4px solid #5c3d2e; padding-left:1rem;">
+                            <i class="fa fa-line-chart mr-2"></i>Additional Parameters
+                        </h5>
+                        <div class="row mb-4">
+                            <div class="col-md-3 mb-3">
+                                <label class="shad-label">
+                                    ST Depression
+                                    <span class="shad-tooltip"><i class="tip-icon">?</i><span class="tip-text">Oldpeak: ST depression induced by exercise relative to rest</span></span>
+                                </label>
+                                <input type="number" step="0.1" class="shad-input" name="old_peak" placeholder="e.g., 1.5" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="shad-label">
+                                    Slope
+                                    <span class="shad-tooltip"><i class="tip-icon">?</i><span class="tip-text">Slope of peak exercise ST segment</span></span>
+                                </label>
+                                <select class="shad-select" name="slope" required>
+                                    <option value="" disabled selected>Select...</option>
+                                    <option value="0">0 — Upsloping</option>
+                                    <option value="1">1 — Flat</option>
+                                    <option value="2">2 — Downsloping</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="shad-label">
+                                    Major Vessels
+                                    <span class="shad-tooltip"><i class="tip-icon">?</i><span class="tip-text">Number of major vessels coloured by fluoroscopy (0–3)</span></span>
+                                </label>
+                                <select class="shad-select" name="ca" required>
+                                    <option value="" disabled selected>Select...</option>
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="shad-label">
+                                    Thalassemia
+                                    <span class="shad-tooltip"><i class="tip-icon">?</i><span class="tip-text">Blood disorder type affecting the heart</span></span>
+                                </label>
+                                <select class="shad-select" name="thal" required>
+                                    <option value="" disabled selected>Select...</option>
+                                    <option value="0">0 — Normal</option>
+                                    <option value="1">1 — Fixed Defect</option>
+                                    <option value="2">2 — Reversible Defect</option>
+                                    <option value="3">3 — Unknown</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Voice input bar -->
+                        <div style="background:#f5f0e8;border:1.5px solid #e8ddd0;border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+                          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                            <div style="flex:1;min-width:200px;">
+                              <p style="font-size:0.82rem;font-weight:700;color:#5c3d2e;margin:0 0 3px;"><i class="fa fa-microphone" style="margin-right:5px;"></i>Voice Fill — speak your symptoms</p>
+                              <p style="font-size:0.75rem;color:#8a7060;margin:0;">Works in Hindi, Tamil, Telugu, Punjabi, English & more</p>
+                            </div>
+                            <button type="button" id="voiceBtn" onclick="toggleRecording()"
+                              style="display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:8px;background:linear-gradient(135deg,#3d2619,#5c3d2e);color:#faf7f0;border:none;font-size:0.85rem;font-weight:600;cursor:pointer;white-space:nowrap;">
+                              <i class="fa fa-microphone" id="voiceBtnIcon"></i>
+                              <span id="voiceBtnText">Start Recording</span>
+                            </button>
+                          </div>
+                          <div id="voiceStatus" style="display:none;margin-top:10px;font-size:0.82rem;color:#5c3d2e;"></div>
+                          <div id="voiceTranscript" style="display:none;margin-top:8px;background:#fffdf9;border:1px solid #e8ddd0;border-radius:8px;padding:10px 12px;font-size:0.82rem;color:#3d2619;line-height:1.6;"></div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn submit" style="padding:1rem 3rem; font-size:1rem; background:linear-gradient(135deg,#3d2619 0%,#5c3d2e 100%) !important; color:#faf7f0; border:none; border-radius:8px;">
+                                <i class="fa fa-calculator mr-2"></i>Analyze Heart Health
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+let mediaRecorder, audioChunks = [], recording = false;
+
+async function toggleRecording() {
+  if (!recording) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      audioChunks = [];
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = sendAudio;
+      mediaRecorder.start();
+      recording = true;
+      setVoiceUI('recording');
+    } catch(e) {
+      setStatus('Microphone access denied. Please allow microphone in browser settings.', 'error');
+    }
+  } else {
+    mediaRecorder.stop();
+    mediaRecorder.stream.getTracks().forEach(t => t.stop());
+    recording = false;
+    setVoiceUI('processing');
+  }
+}
+
+function setVoiceUI(state) {
+  const btn = document.getElementById('voiceBtn');
+  const icon = document.getElementById('voiceBtnIcon');
+  const text = document.getElementById('voiceBtnText');
+  if (state === 'recording') {
+    btn.style.background = '#8b2e2e';
+    icon.className = 'fa fa-stop';
+    text.textContent = 'Stop Recording';
+    setStatus('🔴 Recording... speak your symptoms clearly', 'info');
+  } else if (state === 'processing') {
+    btn.style.background = '#9e7c66';
+    icon.className = 'fa fa-spinner fa-spin';
+    text.textContent = 'Analysing...';
+    setStatus('Transcribing and filling form...', 'info');
+  } else {
+    btn.style.background = 'linear-gradient(135deg,#3d2619,#5c3d2e)';
+    icon.className = 'fa fa-microphone';
+    text.textContent = 'Start Recording';
+  }
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('voiceStatus');
+  el.style.display = 'block';
+  el.textContent = msg;
+  el.style.color = type === 'error' ? '#8b2e2e' : '#5c3d2e';
+}
+
+async function sendAudio() {
+  const blob = new Blob(audioChunks, { type: 'audio/webm' });
+  const reader = new FileReader();
+  reader.onloadend = async () => {
+    const b64 = reader.result.split(',')[1];
+    try {
+      const resp = await fetch('/voice_transcribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        body: JSON.stringify({ audio: b64, mime_type: 'audio/webm' })
+      });
+      const data = await resp.json();
+      setVoiceUI('idle');
+      if (data.error) { setStatus('Error: ' + data.error, 'error'); return; }
+
+      // Show transcript
+      const tDiv = document.getElementById('voiceTranscript');
+      tDiv.style.display = 'block';
+      tDiv.innerHTML = '<strong style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;color:#9e7c66;">Transcript (' + (data.language || 'English') + ')</strong><br>' + data.transcript;
+
+      // Autofill form fields
+      const f = data.fields || {};
+      const fill = (name, val) => {
+        const el = document.querySelector('[name="' + name + '"]');
+        if (el && val !== undefined && val !== null) el.value = val;
+      };
+      fill('age', f.age);
+      fill('trestbps', f.trestbps);
+      fill('chole', f.chol);
+      fill('thalach', f.thalach);
+      if (f.sex !== undefined) {
+        const radio = document.querySelector('[name="sex"][value="' + f.sex + '"]');
+        if (radio) radio.checked = true;
+      }
+      if (f.cp !== undefined) fill('cp', f.cp);
+      if (f.fbs !== undefined) {
+        const radio = document.querySelector('[name="fbs"][value="' + f.fbs + '"]');
+        if (radio) radio.checked = true;
+      }
+      if (f.exang !== undefined) {
+        const radio = document.querySelector('[name="exang"][value="' + f.exang + '"]');
+        if (radio) radio.checked = true;
+      }
+
+      const filled = Object.keys(f).length;
+      setStatus(filled > 0 ? `Filled ${filled} field(s) from your voice. Review and complete the rest.` : 'Transcript captured but no form fields detected. Please fill them manually.', 'info');
+    } catch(e) {
+      setVoiceUI('idle');
+      setStatus('Network error. Please try again.', 'error');
+    }
+  };
+  reader.readAsDataURL(blob);
+}
+</script>
 {% endblock %}

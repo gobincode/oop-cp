@@ -3,101 +3,251 @@
 {% block body %}
 
 <style>
-.glow {
-  font-size: 80px;
-  color: #fff;
-  text-align: center;
-  -webkit-animation: glow 1s ease-in-out infinite alternate;
-  -moz-animation: glow 1s ease-in-out infinite alternate;
-  animation: glow 1s ease-in-out infinite alternate;
-}
-
-@-webkit-keyframes glow {
-  from {
-    text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073;
+  .admin-shell {
+    max-width: 1100px;
+    margin: 48px auto;
+    padding: 0 24px 48px;
+    background: transparent;
   }
 
-  to {
-    text-shadow: 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6, 0 0 50px #ff4da6, 0 0 60px #ff4da6, 0 0 70px #ff4da6, 0 0 80px #ff4da6;
+  /* Page header */
+  .admin-page-header {
+    margin-bottom: 32px;
   }
-}
+  .admin-page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 4px;
+    letter-spacing: -0.3px;
+  }
+  .admin-page-header p {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin: 0;
+  }
 
-/* Rounded border */
-hr.rounded {
-  border-top: 8px solid lightblue;
-  border-radius: 5px;
-}
+  /* shadcn-style separator */
+  .shad-separator {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 0 0 32px;
+  }
 
-.prjdiv:hover{
-transform:translateY(-10px)
-}
-div .container1{
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 36px;
+  }
+  @media (max-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr; }
+  }
 
-width:100%;
-background-color:white;
-border-radius:8px;
-}
-h2, h4{
- padding:10Px;
-}
+  /* shadcn-style Card */
+  .shad-card {
+    background: #fffdf9;
+    border: 1px solid #e8ddd0;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    text-decoration: none;
+    display: block;
+    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
+  }
+  .shad-card:hover {
+    box-shadow: 0 6px 20px rgba(28,18,8,0.12);
+    transform: translateY(-2px);
+    border-color: #c4a48e;
+    text-decoration: none;
+  }
 
+  /* Card header row */
+  .card-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .card-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Icon badge */
+  .card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+  }
+  .icon-blue   { background: #f0ebe0; color: #5c3d2e; }
+  .icon-teal   { background: #eaf0ea; color: #4a6b4d; }
+  .icon-violet { background: #f5f0e4; color: #7a5a46; }
+  .icon-orange { background: #fef5ec; color: #a0522d; }
+
+  /* Stat number */
+  .card-stat {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  /* shadcn-style Badge */
+  .shad-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+  }
+  .badge-blue   { background: #f0ebe0; color: #5c3d2e; border-color: #d9cbba; }
+  .badge-teal   { background: #eaf0ea; color: #4a6b4d; border-color: #b8d4ba; }
+  .badge-violet { background: #f5f0e4; color: #7a5a46; border-color: #d9cbba; }
+  .badge-orange { background: #fef5ec; color: #a0522d; border-color: #e8c9a0; }
+
+  /* Quick actions */
+  .quick-actions-card {
+    background: #fffdf9;
+    border: 1px solid #e8ddd0;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .quick-actions-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 16px;
+  }
+  .quick-actions-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* shadcn-style Button (outline variant) */
+  .shad-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid #e8ddd0;
+    background: #fffdf9;
+    color: #5c4a3a;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    cursor: pointer;
+  }
+  .shad-btn:hover {
+    background: #f5f0e4;
+    border-color: #9e7c66;
+    color: #3d2619;
+    text-decoration: none;
+  }
+  .shad-btn-primary {
+    background: #5c3d2e;
+    color: #faf7f0;
+    border-color: #5c3d2e;
+  }
+  .shad-btn-primary:hover {
+    background: #3d2619;
+    border-color: #3d2619;
+    color: #faf7f0;
+  }
 </style>
 
+<div class="admin-shell">
 
-<div class="container-fluid" style="margin-top:8%;width:100%">
-    <div class="container-fluid">
-        <h1 align="center" style="font-weight:bold;font-family:roman">ADMIN DASHBOARD</h1><hr/><br>
+  <!-- Page Header -->
+  <div class="admin-page-header">
+    <h1><i class="fa fa-tachometer-alt mr-2" style="color:#5c3d2e;"></i>Admin Dashboard</h1>
+    <p>Overview of system activity and quick access to management tools.</p>
+  </div>
+  <hr class="shad-separator">
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+
+    <a href="{% url 'view_doctor' %}" class="shad-card">
+      <div class="card-header-row">
+        <span class="card-label">Total Doctors</span>
+        <span class="card-icon icon-blue"><i class="fa fa-user-md"></i></span>
+      </div>
+      <div class="card-stat">{{ doc }}</div>
+      <span class="shad-badge badge-blue"><i class="fa fa-circle" style="font-size:6px;"></i> Registered</span>
+    </a>
+
+    <a href="{% url 'view_patient' %}" class="shad-card">
+      <div class="card-header-row">
+        <span class="card-label">Total Patients</span>
+        <span class="card-icon icon-teal"><i class="fa fa-users"></i></span>
+      </div>
+      <div class="card-stat">{{ pat }}</div>
+      <span class="shad-badge badge-teal"><i class="fa fa-circle" style="font-size:6px;"></i> Registered</span>
+    </a>
+
+    <a href="{% url 'view_feedback' %}" class="shad-card">
+      <div class="card-header-row">
+        <span class="card-label">Total Feedback</span>
+        <span class="card-icon icon-violet"><i class="fa fa-comments"></i></span>
+      </div>
+      <div class="card-stat">{{ feed }}</div>
+      <span class="shad-badge badge-violet"><i class="fa fa-circle" style="font-size:6px;"></i> Submitted</span>
+    </a>
+
+    <a href="{% url 'view_search_pat' %}" class="shad-card">
+      <div class="card-header-row">
+        <span class="card-label">Predictions Run</span>
+        <span class="card-icon icon-orange"><i class="fa fa-chart-line"></i></span>
+      </div>
+      <div class="card-stat">{{ dis }}</div>
+      <span class="shad-badge badge-orange"><i class="fa fa-circle" style="font-size:6px;"></i> Total searches</span>
+    </a>
+
+    <a href="{% url 'ecg_history' %}" class="shad-card">
+      <div class="card-header-row">
+        <span class="card-label">ECG Scans</span>
+        <span class="card-icon icon-teal"><i class="fa fa-wave-square"></i></span>
+      </div>
+      <div class="card-stat">{{ ecg }}</div>
+      <span class="shad-badge badge-teal"><i class="fa fa-circle" style="font-size:6px;"></i> Analysed</span>
+    </a>
+
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions-card">
+    <p class="quick-actions-title">Quick Actions</p>
+    <div class="quick-actions-grid">
+      <a href="/add_doctor" class="shad-btn shad-btn-primary"><i class="fa fa-plus"></i> Add Doctor</a>
+      <a href="/view_doctor" class="shad-btn"><i class="fa fa-user-md"></i> Manage Doctors</a>
+      <a href="/view_patient" class="shad-btn"><i class="fa fa-users"></i> View Patients</a>
+      <a href="/view_feedback" class="shad-btn"><i class="fa fa-comments"></i> View Feedback</a>
+      <a href="/view_search_pat" class="shad-btn"><i class="fa fa-database"></i> Prediction Data</a>
+      <a href="{% url 'ecg_history' %}" class="shad-btn"><i class="fa fa-wave-square"></i> ECG Scans</a>
     </div>
-             <div class="row">
+  </div>
 
-			        <div class="col-md-6" ><a href="{% url 'view_doctor' %}">
-						<div style="margin:1%;padding:10px;background:#47769c;color:white;">
-						<h3 style="font-weight:bold;font-size:35px">{{doc}}</h3>
-						        <h4 style="font-weight:bold;">Total Doctors</h4>
-						        <p style="color:black">All access are given .</p>
-							</div></a>
-					</div>
+</div>
 
-
-					<div class="col-md-6" ><a href="{% url 'view_patient' %}">
-						    <div style="padding:10px;margin:1%;background:#61bbb9;color:white;">
-						        <h3 style="font-weight:bold;font-size:35px">{{pat}}</h3>
-						        <h4 style="font-weight:bold;">Total Patients</h4>
-						        <p style="color:black">All access are given .</p>
-							</div></a>
-							</div>
-
-				</div>
-				<div class="row">
-					<div class="col-md-6" >
-						<a href="{% url 'view_feedback' %}">
-					<div style="padding:10px;margin:1%;background:#538482;color:white;">
-								<h3 style="font-weight:bold;font-size:35px">{{feed}}</h3>
-						        <h4 style="font-weight:bold;">Total Feedback</h4>
-						        <p style="color:black">All access are given .</p>
-					</div></a>
-					</div>
-
-						<div class="col-md-6" >
-							<a href="{% url 'view_search_pat' %}">
-								<div style="padding:10px;margin:1%;background:#4b605f;color:white;">
-						        <h3 style="font-weight:bold;font-size:35px">{{dis}}</h3>
-						        <h4 style="font-weight:bold;">Searched Quantity</h4>
-						        <p style="color:black">All access are given .</p>
-</a>
-							</div>
-						</div>
-
-
-             </div>
-		
-
-	<div>
-		<hr>
-		<br>
-		<center>
-     <h1>Welcome Admin</h1>
-	</center>
-	<br><br>
-    </div>
 {% endblock %}

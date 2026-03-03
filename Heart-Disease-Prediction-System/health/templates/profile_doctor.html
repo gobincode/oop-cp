@@ -2,87 +2,60 @@
 {% load static %}
 {% block body %}
 <style>
-    .div1{
-    color:green;
-    }
-    .div2{
-    color:red;
-    }
+  .prof-shell { max-width:560px; margin:56px auto; padding:0 20px 56px; }
+  .prof-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; box-shadow:0 2px 14px rgba(28,18,8,0.08); overflow:hidden; }
+  .prof-card-head { background:linear-gradient(135deg,#1c1208,#5c3d2e); padding:1.25rem 1.5rem; display:flex; align-items:center; gap:8px; }
+  .prof-card-head h3 { margin:0; color:#faf7f0; font-size:1.1rem; font-weight:600; }
+  .prof-card-body { padding:0; }
+
+  .prof-avatar-area { text-align:center; padding:1.75rem 1.5rem 1rem; border-bottom:1px solid #f0ebe0; }
+  .prof-avatar { width:100px; height:100px; object-fit:cover; border-radius:50%; border:3px solid #e8ddd0; }
+  .prof-name { font-size:1.2rem; font-weight:700; color:#1c1208; margin-top:0.75rem; }
+
+  .prof-row { display:flex; align-items:flex-start; gap:1rem; padding:0.85rem 1.5rem; border-bottom:1px solid #f0ebe0; }
+  .prof-row:last-child { border-bottom:none; }
+  .prof-row-label { font-size:0.78rem; font-weight:700; color:#8a7060; text-transform:uppercase; letter-spacing:0.04em; min-width:110px; padding-top:2px; }
+  .prof-row-val { font-size:0.9rem; color:#1c1208; font-weight:500; }
+
+  .prof-actions { display:flex; gap:10px; padding:1.25rem 1.5rem; flex-wrap:wrap; background:#faf7f0; border-top:1px solid #e8ddd0; }
+  .prof-btn-primary { display:inline-flex;align-items:center;gap:6px; padding:9px 20px; border-radius:8px; background:linear-gradient(135deg,#3d2619,#5c3d2e); color:#faf7f0; font-size:0.875rem; font-weight:600; text-decoration:none; }
+  .prof-btn-primary:hover { opacity:0.88; color:#faf7f0; text-decoration:none; }
+  .prof-btn-back { display:inline-flex;align-items:center;gap:6px; padding:9px 16px; border-radius:8px; border:1.5px solid #e8ddd0; background:#fffdf9; color:#5c4a3a; font-size:0.875rem; font-weight:500; text-decoration:none; }
+  .prof-btn-back:hover { background:#f5f0e4; border-color:#9e7c66; color:#3d2619; text-decoration:none; }
 </style>
-<div class="container" style="width:60%;margin-top:8%;margin-bottom:5%;background:white;border-radius:2%;border:1px solid grey">
-    <br>
-    <h2 class="w3ls-title text-uppercase text-dark font-weight-bold" align="center">My Detail</h2>
 
-<div align="left" class="container-fluid" style="width:100%;margin-bottom:5%">
-    <hr><div class="row" >
-        <div class="col-md-6 div2" style="color: #414141; font-weight: 900;">
-            <strong>Full Name:</strong>
-        </div>
-        <div class="col-md-6 div1">
-            {{pro.user.first_name}} {{pro.user.last_name}}
-        </div>
-    </div><hr>
-
-
-    <div class="row">
-        <div class="col-md-6 div2" style="color: #414141; font-weight: 900;">
-            <strong>Image:</strong>
-        </div>
-        <div class="col-md-6">
-            <img src="{{pro.image.url}}" style="width:100px;height:130px"></img>
-        </div></div><hr>
-
-    <div class="row">
-        <div class="col-md-6 div2" style="color: #414141; font-weight: 900;">
-            <strong>Email Id :</strong>
-        </div>
-        <div class="col-md-6 div1">
-            {{pro.user.email}}
-        </div>
-    </div><hr>
-
-     <div class="row">
-        <div class="col-md-6 div2" style="color: #414141; font-weight: 900;">
-            <strong>Date of Birth :</strong>
-        </div>
-        <div class="col-md-6 div1">
-            {{pro.dob}}
-        </div>
-    </div><hr>
-
-
-     <div class="row">
-        <div class="col-md-6 div2" style="color: #414141; font-weight: 900;">
-            <strong>Contact :</strong>
-        </div>
-        <div class="col-md-6 div1">
-            {{pro.contact}}
-        </div>
-     </div><hr>
-
-    <div class="row">
-        <div class="col-md-6 div2" style="color: #414141; font-weight: 900;">
-            <strong>City :</strong>
-        </div>
-        <div class="col-md-6 div1">
-            {{pro.address}}
-        </div>
-    </div><hr>
-    {% if error != "pat" %}
-    <div class="row">
-        <div class="col-md-6 div2" style="color: #414141; font-weight: 900;">
-            <strong>Specialist :</strong>
-        </div>
-        <div class="col-md-6 div1">
-            {{pro.category}}
-        </div>
-    </div><hr>
-    {% endif %}
-    <div class="login px-sm-12" style="width:100%">
-    <a href="{% url 'edit_profile' %}">
-        <button class="btn submit mt-4 " style="width:100%; background-color: #726f6e;">Update Detail</button>
-    </a>
+<div class="prof-shell">
+  <div class="prof-card">
+    <div class="prof-card-head">
+      <i class="fa fa-id-card" style="color:#e8c9a0;"></i>
+      <h3>My Profile</h3>
     </div>
-</div>
+    <div class="prof-card-body">
+
+      <div class="prof-avatar-area">
+        <img src="{{ pro.image.url }}" alt="Profile" class="prof-avatar">
+        <div class="prof-name">{{ pro.user.first_name }} {{ pro.user.last_name }}</div>
+        {% if error != "pat" %}
+        <div style="margin-top:4px;"><span style="font-size:0.78rem;color:#9e7c66;background:#f5f0e4;padding:3px 10px;border-radius:99px;font-weight:600;">{{ pro.category }}</span></div>
+        {% endif %}
+      </div>
+
+      <div class="prof-row"><span class="prof-row-label">Email</span><span class="prof-row-val">{{ pro.user.email }}</span></div>
+      <div class="prof-row"><span class="prof-row-label">Date of Birth</span><span class="prof-row-val">{{ pro.dob }}</span></div>
+      <div class="prof-row"><span class="prof-row-label">Contact</span><span class="prof-row-val">{{ pro.contact }}</span></div>
+      <div class="prof-row"><span class="prof-row-label">City</span><span class="prof-row-val">{{ pro.address }}</span></div>
+
+    </div>
+    <div class="prof-actions">
+      {% if request.user.patient_set.all.0 %}
+        <a href="{% url 'patient_home' %}" class="prof-btn-back"><i class="fa fa-arrow-left"></i> Dashboard</a>
+      {% elif request.user.doctor_set.all.0 %}
+        <a href="{% url 'doctor_home' %}" class="prof-btn-back"><i class="fa fa-arrow-left"></i> Dashboard</a>
+      {% elif request.user.is_staff %}
+        <a href="{% url 'admin_home' %}" class="prof-btn-back"><i class="fa fa-arrow-left"></i> Dashboard</a>
+      {% endif %}
+      <a href="{% url 'edit_profile' %}" class="prof-btn-primary"><i class="fa fa-edit"></i> Edit Profile</a>
+    </div>
+  </div>
 </div>
 {% endblock %}

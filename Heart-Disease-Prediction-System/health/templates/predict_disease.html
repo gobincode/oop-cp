@@ -13,7 +13,7 @@
 				<div class="col-lg-8">
 					<div class="dashboard-card text-center fade-in">
 						<div class="mb-4">
-							<span class="badge" style="background: #e0e7ff; color: #4f46e5; font-size: 1rem; padding: 0.75rem 1.5rem;">
+							<span class="badge" style="background: #f0ebe0; color: #5c3d2e; font-size: 1rem; padding: 0.75rem 1.5rem;">
 								Model Accuracy: {{ accuracy }}%
 							</span>
 						</div>
@@ -24,8 +24,8 @@
 						<div class="health-positive" style="font-size: 1.25rem;">
 							<i class="fa fa-check-circle" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
 							<strong>You are healthy!</strong>
-							<p class="mt-3" style="color: #64748b; font-size: 1rem; font-weight: 400;">
-								Based on the provided parameters, you show no signs of heart disease. 
+							<p class="mt-3" style="color: #8a7060; font-size: 1rem; font-weight: 400;">
+								Based on the provided parameters, you show no signs of heart disease.
 								Continue maintaining a healthy lifestyle!
 							</p>
 						</div>
@@ -33,24 +33,82 @@
 						<div class="health-warning" style="font-size: 1.25rem;">
 							<i class="fa fa-exclamation-triangle" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
 							<strong>Potential Risk Detected</strong>
-							<p class="mt-3" style="color: #64748b; font-size: 1rem; font-weight: 400;">
-								Our analysis indicates you may have a risk of heart disease. 
+							<p class="mt-3" style="color: #8a7060; font-size: 1rem; font-weight: 400;">
+								Our analysis indicates you may have a risk of heart disease.
 								Please consult with a healthcare professional for proper evaluation.
 							</p>
 						</div>
 						{% endif %}
+
+						<!-- Next-step actions — shown for all results -->
+						<div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap; margin-top:1.5rem;">
+							<a href="{% url 'add_heartdetail' %}" style="display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:8px;background:linear-gradient(135deg,#3d2619,#5c3d2e);color:#faf7f0;font-size:0.875rem;font-weight:600;text-decoration:none;">
+								<i class="fa fa-redo"></i> Run Again
+							</a>
+							<a href="{% url 'medical_chat_from_result' pred accuracy %}" style="display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:8px;background:#f0ebe0;border:1.5px solid #d4c4b0;color:#3d2619;font-size:0.875rem;font-weight:600;text-decoration:none;">
+								<i class="fa fa-robot"></i> Ask AI About My Result
+							</a>
+							{% if pred != "0" %}
+							<a href="{% url 'find_doctors' %}" style="display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:8px;background:#fffdf9;border:1.5px solid #e8ddd0;color:#5c4a3a;font-size:0.875rem;font-weight:500;text-decoration:none;">
+								<i class="fa fa-map-marker-alt"></i> Find Doctors Near Me
+							</a>
+							<a href="{% url 'upload_ecg' %}" style="display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:8px;background:#fffdf9;border:1.5px solid #e8ddd0;color:#5c4a3a;font-size:0.875rem;font-weight:500;text-decoration:none;">
+								<i class="fa fa-wave-square"></i> Also Analyse ECG
+							</a>
+							{% endif %}
+							<a href="{% url 'patient_home' %}" style="display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:8px;background:#fffdf9;border:1.5px solid #e8ddd0;color:#5c4a3a;font-size:0.875rem;font-weight:500;text-decoration:none;">
+								<i class="fa fa-home"></i> Dashboard
+							</a>
+						</div>
 					</div>
 				</div>
 			</div>
+			{% if recommendation %}
+			<style>
+			  .rec-card { border-left: 4px solid {{ recommendation.urgency_color }} !important; }
+			  .rec-icon { width:44px;height:44px;border-radius:50%;background:{{ recommendation.urgency_bg }};border:1.5px solid {{ recommendation.urgency_border }};display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+			  .rec-urgency-badge { background:{{ recommendation.urgency_bg }};color:{{ recommendation.urgency_color }};border:1px solid {{ recommendation.urgency_border }}; }
+			</style>
+			<div class="row justify-content-center mt-4">
+				<div class="col-lg-8">
+					<div class="dashboard-card shad-card fade-in rec-card">
+						<p class="shad-card-header mb-3" style="display:flex;align-items:center;gap:8px;">
+							<i class="fa fa-stethoscope" style="color:#5c3d2e;"></i> AI Specialist Recommendation
+						</p>
+						<div style="display:flex;align-items:flex-start;gap:14px;">
+							<div class="rec-icon">
+								<i class="fa fa-user-md" style="color:{{ recommendation.urgency_color }};font-size:1.1rem;"></i>
+							</div>
+							<div style="flex:1;">
+								<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+									<span style="font-size:1rem;font-weight:700;color:#1c1208;">See a {{ recommendation.specialty }}</span>
+									<span class="shad-badge rec-urgency-badge">{{ recommendation.urgency|upper }}</span>
+								</div>
+								<p style="color:#5c4a3a;font-size:0.875rem;margin:0 0 10px;line-height:1.6;">{{ recommendation.reason }}</p>
+								{% if recommendation.also_see %}
+								<p style="font-size:0.8rem;color:#8a7060;margin:0 0 8px;">
+									Also consider:
+									{% for s in recommendation.also_see %}<span class="shad-badge" style="background:#f0ebe0;color:#5c3d2e;border-color:#d9cbba;">{{ s }}</span> {% endfor %}
+								</p>
+								{% endif %}
+								<p style="font-size:0.75rem;color:#b8a898;margin:0;"><i class="fa fa-clock" style="margin-right:4px;"></i>{{ recommendation.urgency_label }}</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			{% endif %}
+
 			{% if pred != "0" %}
-			<div class="row justify-content-center mt-5">
+			<div class="row justify-content-center mt-4">
 				<div class="col-lg-10">
 					<div class="dashboard-card fade-in">
-						<h3 class="text-center mb-4" style="color: #6366f1;">
-							<i class="fa fa-user-md mr-2"></i>Connect with Our Doctors
+						<h3 class="text-center mb-2" style="color: #5c3d2e;">
+							<i class="fa fa-user-md mr-2"></i>
+							{% if recommendation %}Recommended {{ recommendation.specialty }} Doctors{% else %}Connect with Our Doctors{% endif %}
 						</h3>
 						<p class="text-center mb-4" style="color: #64748b;">
-							Schedule a consultation with our experienced healthcare professionals
+							{% if recommendation %}Filtered to show {{ recommendation.specialty }} specialists based on your result{% else %}Schedule a consultation with our experienced healthcare professionals{% endif %}
 						</p>
 						<div class="table-responsive">
 							<table id="example" class="display" style="width:100%">
@@ -62,21 +120,27 @@
 										<th>Email</th>
 										<th>Contact</th>
 										<th>Address</th>
+										<th>Book</th>
 									</tr>
 								</thead>
 								<tbody>
 									{% for i in doctor %}
 									<tr>
 										<td>{{forloop.counter}}</td>
-										<td><img src="{{i.image.url}}" style="width:70px;height:70px;object-fit:cover;"></td>
+										<td>{% if i.image %}<img src="{{i.image.url}}" style="width:70px;height:70px;object-fit:cover;border-radius:6px;">{% else %}<div style="width:70px;height:70px;border-radius:6px;background:#f0ebe0;display:flex;align-items:center;justify-content:center;"><i class="fa fa-user-md" style="color:#9e7c66;font-size:1.5rem;"></i></div>{% endif %}</td>
 										<td><strong>{{i.user.first_name}} {{i.user.last_name}}</strong></td>
-										<td><a href="mailto:{{i.user.email}}" style="color: #6366f1;">{{i.user.email}}</a></td>
+										<td><a href="mailto:{{i.user.email}}" style="color: #5c3d2e;">{{i.user.email}}</a></td>
 										<td>{{i.contact}}</td>
 										<td>{{i.address}}</td>
+										<td>
+											<a href="{% url 'book_appointment' i.id %}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:7px;background:linear-gradient(135deg,#3d2619,#5c3d2e);color:#faf7f0;font-size:0.8rem;font-weight:600;text-decoration:none;">
+												<i class="fa fa-calendar-plus"></i> Book
+											</a>
+										</td>
 									</tr>
 									{% empty %}
 									<tr>
-										<td colspan="6" class="text-center" style="color: #94a3b8;">No doctors available at the moment.</td>
+										<td colspan="7" class="text-center" style="color:#b8a898;">No doctors available in your area. <a href="{% url 'find_doctors' %}" style="color:#5c3d2e;">Search all doctors</a></td>
 									</tr>
 									{% endfor %}
 								</tbody>

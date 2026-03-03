@@ -1,37 +1,63 @@
 {% extends 'index.html' %}
 {% load static %}
 {% block body %}
+<style>
+  .at-shell { max-width:1000px; margin:48px auto; padding:0 20px 56px; }
+  .at-header { margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  .at-header h1 { font-size:1.5rem; font-weight:700; color:#1c1208; margin:0; }
+  .at-header p { color:#8a7060; font-size:0.875rem; margin:4px 0 0; }
+  .at-sep { border:none; border-top:1px solid #e8ddd0; margin:0 0 24px; }
+  .at-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; overflow:hidden; box-shadow:0 2px 12px rgba(28,18,8,0.07); }
+  .at-card-head { background:linear-gradient(135deg,#1c1208,#5c3d2e); padding:1rem 1.5rem; display:flex; align-items:center; gap:8px; }
+  .at-card-head h3 { margin:0; color:#faf7f0; font-size:1.05rem; font-weight:600; }
+  .at-table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+  .at-table thead tr { background:#f5f0e4; }
+  .at-table thead th { padding:0.8rem 1rem; text-align:left; font-size:0.73rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#8a7060; border-bottom:1px solid #e8ddd0; }
+  .at-table tbody tr { border-bottom:1px solid #f0ebe0; transition:background 0.12s; }
+  .at-table tbody tr:last-child { border-bottom:none; }
+  .at-table tbody tr:hover { background:#faf7f0; }
+  .at-table tbody td { padding:0.8rem 1rem; color:#5c4a3a; vertical-align:middle; }
+  .at-btn-del { display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:7px;font-size:0.78rem;font-weight:500;text-decoration:none;background:#fdf0ee;color:#8b2e2e;border:1px solid #e8b4a8; }
+  .at-btn-del:hover { background:#f5dbd8;text-decoration:none;color:#6b1e1e; }
+  .at-back { display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;border:1.5px solid #e8ddd0;background:#fffdf9;color:#5c4a3a;font-size:0.875rem;text-decoration:none; }
+  .at-back:hover { background:#f5f0e4;border-color:#9e7c66;color:#3d2619;text-decoration:none; }
+</style>
 
-<div class="container-fluid" style="width:90%;margin-top:8%">
-                    <div class="container-fluid">
-                        <h1 align="center" class="w3ls-title text-uppercase text-dark font-weight-bold">View Feedbacks</h1><br>
-                        
-                         </div><hr>
-                                <table id="example" class="display" style="width:100%">
-                                  <thead>
-                                    <tr>
-                                      <th>#</th>
-                                      <th>Full Name</th>
-                                      <th>Email</th>
-                                      <th>Contact</th>
-                                      <th>Messages</th>
-                                      <th>Action</th>
+<div class="at-shell">
+  <div class="at-header">
+    <div>
+      <h1><i class="fa fa-comments mr-2" style="color:#5c3d2e;"></i>Patient Feedback</h1>
+      <p>All submitted feedback from patients.</p>
+    </div>
+    <a href="{% url 'admin_home' %}" class="at-back"><i class="fa fa-arrow-left"></i> Dashboard</a>
+  </div>
+  <hr class="at-sep">
 
-                                  </tr>
-                              </thead>
-                              <tbody>
-                              {% for i in dis %}
-                                <tr>
-                                  <td>{{forloop.counter}}</td>
-                                  <td>{{i.user.first_name}} {{i.user.user.last_name}}</td>
-                                  <td>{{i.user.email}}</td>
-                                  <td>{{i.user.patient_set.all.0.contact}}</td>
-                                  <td>{{i.messages}}</td>
-                                  <td style="width:150px">
-                                      <a href="{% url 'delete_feedback' i.id %}" ><button class="btn btn-danger" onclick="return confirm('Are you sure?')"><i class="fa fa-trash-o"></i></button></a></td>
-                              </tr>
-                              {% endfor %}
-                          </tbody>
-                      </table>
-                  </div>
+  <div class="at-card">
+    <div class="at-card-head"><i class="fa fa-comments" style="color:#e8c9a0;"></i><h3>Feedback Messages</h3></div>
+    <div style="overflow-x:auto;">
+      <table class="at-table" id="example">
+        <thead><tr>
+          <th>#</th><th>Full Name</th><th>Email</th><th>Contact</th><th>Message</th><th>Action</th>
+        </tr></thead>
+        <tbody>
+        {% for i in dis %}
+        <tr>
+          <td style="color:#b8a898;">{{ forloop.counter }}</td>
+          <td style="font-weight:600;color:#1c1208;">{{ i.user.first_name }} {{ i.user.last_name }}</td>
+          <td><a href="mailto:{{ i.user.email }}" style="color:#5c3d2e;">{{ i.user.email }}</a></td>
+          <td>{{ i.user.patient_set.all.0.contact }}</td>
+          <td style="max-width:240px;color:#5c4a3a;">{{ i.messages }}</td>
+          <td>
+            <a href="{% url 'delete_feedback' i.id %}" class="at-btn-del" onclick="return confirm('Delete this feedback?')"><i class="fa fa-trash"></i> Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;color:#b8a898;padding:2rem;">No feedback submitted yet.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}

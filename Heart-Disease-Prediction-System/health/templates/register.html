@@ -3,98 +3,74 @@
 {% block body %}
 	<!-- register -->
 {% if error == "create" %}
-<script>
-    alert('Registration Successfull');
-    window.location="{% url 'login' %}";
-</script>
+<script>window.location="{% url 'login' %}";</script>
 {% endif %}
 
 
-	<section class="logins py-5">
-		<div class="container py-xl-5 py-lg-3">
-			<div class="title-section mb-md-5 mb-4 text-center fade-in">
-				<h3 class="w3ls-title text-uppercase font-weight-bold">Create Your Account</h3>
-				<p class="mt-3" style="color: #64748b;">Join us to manage your heart health</p>
-			</div>
-			<div class="row justify-content-center">
-				<div class="col-lg-10">
-					<div class="dashboard-card fade-in">
-						<form action="" method="post" enctype="multipart/form-data">
-							{% csrf_token %}
-							<div class="row">
-								<div class="col-md-6 mb-4">
-									<label>First Name</label>
-									<input type="text" class="form-control" name="fname" placeholder="Enter first name" required="">
-								</div>
-								<div class="col-md-6 mb-4">
-									<label>Last Name</label>
-									<input type="text" class="form-control" name="lname" placeholder="Enter last name" required="">
-								</div>
-							</div>
-							
-							<div class="row">
-								<div class="col-md-6 mb-4">
-									<label>Username</label>
-									<input type="text" class="form-control" name="uname" placeholder="Choose a username" required="">
-								</div>
-								<div class="col-md-6 mb-4">
-									<label>Password</label>
-									<input type="password" class="form-control" name="pwd" placeholder="Create a password" required="">
-								</div>
-							</div>
-							
-							<div class="row">
-								<div class="col-md-6 mb-4">
-									<label>Email</label>
-									<input type="email" class="form-control" name="email" placeholder="your.email@example.com" required="">
-								</div>
-								<div class="col-md-6 mb-4">
-									<label>Contact</label>
-									<input type="text" class="form-control" name="contact" placeholder="Enter phone number" required="">
-								</div>
-							</div>
-							
-							<div class="row">
-								<div class="col-md-6 mb-4">
-									<label>Date Of Birth</label>
-									<input type="date" class="form-control" name="dob" required="">
-								</div>
-								<div class="col-md-6 mb-4">
-									<label>Profile Image</label>
-									<input type="file" class="form-control" name="image" required="">
-								</div>
-							</div>
-							
-							<div class="row">
-								<div class="col-md-6 mb-4">
-									<label>Address</label>
-									<input type="text" class="form-control" name="add" placeholder="Enter your city/address" required="">
-								</div>
-								<div class="col-md-6 mb-4">
-									<label>User Type</label>
-									<div class="mt-2">
-										<div class="form-check form-check-inline">
-											<input class="form-check-input" type="radio" name="type" value="Patient" required="">
-											<label class="form-check-label" style="text-transform: none; letter-spacing: 0;">Patient</label>
-										</div>
-										<div class="form-check form-check-inline ml-4">
-											<input class="form-check-input" type="radio" name="type" value="Doctor" required="">
-											<label class="form-check-label" style="text-transform: none; letter-spacing: 0;">Doctor</label>
-										</div>
-									</div>
-								</div>
-							</div>
-							
-							<button type="submit" class="btn submit mt-3 w-100">Create Account</button>
-							<p class="text-center mt-4" style="color: #94a3b8; font-size: 0.875rem;">
-								By clicking Create Account, you agree to our terms of service
-							</p>
-						</form>
-					</div>
-				</div>
-			</div>
-		</div>
-	</section>
+<style>
+  .reg-shell { max-width:780px; margin:48px auto; padding:0 20px 56px; }
+  .reg-card { background:#fffdf9; border:1px solid #e8ddd0; border-radius:14px; box-shadow:0 2px 14px rgba(28,18,8,0.08); overflow:hidden; }
+  .reg-card-head { background:linear-gradient(135deg,#1c1208,#5c3d2e); padding:1.25rem 1.75rem; display:flex; align-items:center; gap:8px; }
+  .reg-card-head h3 { margin:0; color:#faf7f0; font-size:1.15rem; font-weight:600; }
+  .reg-card-body { padding:1.75rem; }
+  .reg-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+  @media(max-width:600px){ .reg-grid{grid-template-columns:1fr;} }
+  .reg-field { display:flex; flex-direction:column; gap:5px; }
+  .reg-field label { font-size:0.8rem; font-weight:600; color:#5c4a3a; }
+  .reg-field input, .reg-field select { padding:9px 12px; border:1.5px solid #d9cbba; border-radius:8px; background:#faf7f0; color:#1c1208; font-size:0.9rem; outline:none; }
+  .reg-field input:focus, .reg-field select:focus { border-color:#5c3d2e; background:#fffdf9; box-shadow:0 0 0 3px rgba(92,61,46,0.1); }
+  .reg-radio-group { display:flex; gap:1rem; margin-top:4px; }
+  .reg-radio-opt { display:flex; align-items:center; gap:6px; cursor:pointer; }
+  .reg-radio-opt input[type=radio] { width:16px; height:16px; accent-color:#5c3d2e; cursor:pointer; }
+  .reg-radio-opt span { font-size:0.875rem; font-weight:500; color:#5c4a3a; }
+  .reg-submit { width:100%; padding:11px; border-radius:8px; background:linear-gradient(135deg,#3d2619,#5c3d2e); color:#faf7f0; font-size:0.95rem; font-weight:600; border:none; cursor:pointer; margin-top:1rem; transition:opacity 0.15s; }
+  .reg-submit:hover { opacity:0.88; }
+  .reg-sep { border:none; border-top:1px solid #e8ddd0; margin:1.5rem 0; }
+</style>
+
+<div class="reg-shell">
+  <div class="reg-card">
+    <div class="reg-card-head">
+      <i class="fa fa-user-plus" style="color:#e8c9a0;"></i>
+      <h3>Create Your Account</h3>
+    </div>
+    <div class="reg-card-body">
+      {% if error == "username_taken" %}
+      <div style="background:#fdf0ee;border:1px solid #e8b4a8;color:#8b2e2e;padding:10px 14px;border-radius:8px;margin-bottom:1.25rem;font-size:0.875rem;"><i class="fa fa-exclamation-circle mr-1"></i> That username is already taken. Please choose another.</div>
+      {% elif error == "no_image" %}
+      <div style="background:#fef8ec;border:1px solid #e8d9a0;color:#7a5a1a;padding:10px 14px;border-radius:8px;margin-bottom:1.25rem;font-size:0.875rem;"><i class="fa fa-exclamation-circle mr-1"></i> Please upload a profile image.</div>
+      {% elif error == "error" %}
+      <div style="background:#fdf0ee;border:1px solid #e8b4a8;color:#8b2e2e;padding:10px 14px;border-radius:8px;margin-bottom:1.25rem;font-size:0.875rem;"><i class="fa fa-exclamation-circle mr-1"></i> Registration failed. Please check your details and try again.</div>
+      {% endif %}
+      <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="reg-grid">
+          <div class="reg-field"><label>First Name</label><input type="text" name="fname" placeholder="First name" required></div>
+          <div class="reg-field"><label>Last Name</label><input type="text" name="lname" placeholder="Last name" required></div>
+          <div class="reg-field"><label>Username</label><input type="text" name="uname" placeholder="Choose a username" required></div>
+          <div class="reg-field"><label>Password</label><input type="password" name="pwd" placeholder="Create a password" required></div>
+          <div class="reg-field"><label>Email</label><input type="email" name="email" placeholder="your@email.com" required></div>
+          <div class="reg-field"><label>Contact</label><input type="text" name="contact" placeholder="Phone number" required></div>
+          <div class="reg-field"><label>Date of Birth</label><input type="date" name="dob" required></div>
+          <div class="reg-field"><label>Profile Image</label><input type="file" name="image" required></div>
+          <div class="reg-field"><label>City / Address</label><input type="text" name="add" placeholder="Your city or address" required></div>
+          <div class="reg-field">
+            <label>Account Type</label>
+            <div class="reg-radio-group">
+              <label class="reg-radio-opt"><input type="radio" name="type" value="Patient" required><span>Patient</span></label>
+              <label class="reg-radio-opt"><input type="radio" name="type" value="Doctor"><span>Doctor</span></label>
+            </div>
+          </div>
+        </div>
+        <hr class="reg-sep">
+        <button type="submit" class="reg-submit"><i class="fa fa-user-plus mr-1"></i> Create Account</button>
+        <p style="text-align:center;margin-top:1rem;font-size:0.8rem;color:#b8a898;">
+          Already have an account? <a href="{% url 'login' %}" style="color:#5c3d2e;font-weight:600;">Sign In</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>
 	<!-- //register -->
 
 {% endblock %}

@@ -2,11 +2,154 @@
 {% load static %}
 {% block body %}
 
-<div class="banner_w3lspvt" style="margin-top:6%">
-	<center>
-		<br>
-			<img src="{% static 'images/heart.jpg' %}" alt="" height="550px" >
-			</center>
-		</div>
+<style>
+  .hero-section {
+    min-height: calc(100vh - 80px);
+    background: linear-gradient(160deg, #faf7f0 0%, #f5f0e4 60%, #ede5d4 100%);
+    display: flex; align-items: center; padding: 4rem 0;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(92,61,46,0.1); color: #3d2619;
+    border: 1px solid rgba(92,61,46,0.2);
+    padding: 5px 14px; border-radius: 99px;
+    font-size: 0.78rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 1.25rem;
+  }
+  .hero-title {
+    font-size: 2.75rem; font-weight: 800; color: #1c1208;
+    line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 1rem;
+  }
+  .hero-title span { color: #5c3d2e; }
+  .hero-subtitle {
+    font-size: 1.05rem; color: #8a7060; line-height: 1.7;
+    max-width: 520px; margin-bottom: 2rem;
+  }
+  .hero-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .hero-btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 28px; border-radius: 9px;
+    background: linear-gradient(135deg, #1c1208, #5c3d2e);
+    color: #faf7f0; font-size: 0.95rem; font-weight: 600;
+    text-decoration: none; transition: opacity 0.2s;
+  }
+  .hero-btn-primary:hover { opacity: 0.88; color: #faf7f0; text-decoration: none; }
+  .hero-btn-outline {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 28px; border-radius: 9px;
+    border: 1.5px solid #e8ddd0; background: #fffdf9;
+    color: #5c4a3a; font-size: 0.95rem; font-weight: 500;
+    text-decoration: none; transition: background 0.15s, border-color 0.15s;
+  }
+  .hero-btn-outline:hover { background: #f5f0e4; border-color: #9e7c66; color: #3d2619; text-decoration: none; }
+
+  .hero-stats { display: flex; gap: 2rem; margin-top: 3rem; flex-wrap: wrap; }
+  .hero-stat-item { text-align: left; }
+  .hero-stat-num { font-size: 1.75rem; font-weight: 800; color: #1c1208; line-height: 1; }
+  .hero-stat-label { font-size: 0.78rem; color: #8a7060; font-weight: 500; margin-top: 2px; }
+
+  .hero-feature-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.9rem; }
+  .hero-feature-list li {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    background: #fffdf9; border: 1px solid #e8ddd0; border-radius: 10px;
+    padding: 0.85rem 1rem; font-size: 0.9rem; color: #5c4a3a;
+  }
+  .hero-feature-list li .feat-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: #f0ebe0; color: #5c3d2e;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; flex-shrink: 0;
+  }
+  .hero-feature-list li strong { color: #1c1208; display: block; font-size: 0.88rem; }
+</style>
+
+<div class="hero-section">
+  <div class="container">
+    <div class="row align-items-center">
+
+      <!-- Left: text -->
+      <div class="col-lg-6 mb-5 mb-lg-0">
+        <div class="hero-badge">
+          <i class="fa fa-heartbeat"></i> AI-Powered Heart Health
+        </div>
+        <h1 class="hero-title">
+          Predict Heart Disease<br><span>Before It Happens</span>
+        </h1>
+        <p class="hero-subtitle">
+          Upload an ECG scan or enter your clinical parameters. Our machine learning system analyses your data across 5 models and gives you an instant risk assessment.
+        </p>
+        <div class="hero-actions">
+          {% if request.user.is_authenticated %}
+            {% if request.user.patient_set.all.0 %}
+              <a href="{% url 'patient_home' %}" class="hero-btn-primary"><i class="fa fa-tachometer-alt"></i> Go to Dashboard</a>
+              <a href="/add_heartdetail" class="hero-btn-outline"><i class="fa fa-heartbeat"></i> Run Prediction</a>
+            {% elif request.user.is_staff %}
+              <a href="{% url 'admin_home' %}" class="hero-btn-primary"><i class="fa fa-tachometer-alt"></i> Admin Dashboard</a>
+            {% else %}
+              <a href="{% url 'doctor_home' %}" class="hero-btn-primary"><i class="fa fa-tachometer-alt"></i> Doctor Dashboard</a>
+            {% endif %}
+          {% else %}
+            <a href="{% url 'login' %}" class="hero-btn-primary"><i class="fa fa-sign-in-alt"></i> Sign In</a>
+            <a href="{% url 'signup' %}" class="hero-btn-outline"><i class="fa fa-user-plus"></i> Create Account</a>
+          {% endif %}
+        </div>
+
+        <div class="hero-stats">
+          <div class="hero-stat-item">
+            <div class="hero-stat-num">5</div>
+            <div class="hero-stat-label">ML Models</div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-num">4</div>
+            <div class="hero-stat-label">ECG Categories</div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-num">13</div>
+            <div class="hero-stat-label">Clinical Parameters</div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-num">~85%</div>
+            <div class="hero-stat-label">Model Accuracy</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: feature cards -->
+      <div class="col-lg-5 offset-lg-1">
+        <ul class="hero-feature-list">
+          <li>
+            <span class="feat-icon"><i class="fa fa-chart-line"></i></span>
+            <div>
+              <strong>Heart Disease Prediction</strong>
+              Enter 13 clinical parameters — get instant risk assessment from 5 ML models.
+            </div>
+          </li>
+          <li>
+            <span class="feat-icon"><i class="fa fa-wave-square"></i></span>
+            <div>
+              <strong>ECG Image Analysis</strong>
+              Upload a 12-lead ECG scan — AI classifies it as Normal, MI, Abnormal or History of MI.
+            </div>
+          </li>
+          <li>
+            <span class="feat-icon"><i class="fa fa-map-marker-alt"></i></span>
+            <div>
+              <strong>Find Nearby Doctors</strong>
+              Locate cardiologists near you using Google Maps and book directly.
+            </div>
+          </li>
+          <li>
+            <span class="feat-icon"><i class="fa fa-calendar-check"></i></span>
+            <div>
+              <strong>Book Appointments</strong>
+              Schedule consultations with specialists from your results page.
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 {% endblock %}

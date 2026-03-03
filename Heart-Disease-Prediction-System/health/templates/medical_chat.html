@@ -1,0 +1,536 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block body %}
+
+<style>
+  #fab-chat { display: none !important; }
+  /* ── Layout ── */
+  .chat-shell {
+    display: flex;
+    height: calc(100vh - 64px); /* subtract navbar */
+    background: #faf7f0;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ── */
+  .chat-sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: #fffdf9;
+    border-right: 1px solid #e8ddd0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-header {
+    padding: 1rem;
+    border-bottom: 1px solid #e8ddd0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .sidebar-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #1c1208;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .new-chat-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #5c3d2e;
+    color: #faf7f0;
+    border: none;
+    border-radius: 7px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .new-chat-btn:hover { background: #3d2619; color: #faf7f0; text-decoration: none; }
+
+  .session-list { overflow-y: auto; flex: 1; padding: 8px; }
+  .session-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.12s;
+    gap: 6px;
+    text-decoration: none;
+    color: #3d2619;
+    margin-bottom: 2px;
+  }
+  .session-item:hover { background: #f5f0e4; text-decoration: none; color: #1c1208; }
+  .session-item.active { background: #f0e8da; color: #1c1208; }
+  .session-label {
+    flex: 1;
+    font-size: 0.82rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .session-date { font-size: 0.72rem; color: #9e7c66; white-space: nowrap; }
+  .session-delete {
+    background: none; border: none; color: #c4a48e;
+    cursor: pointer; padding: 2px 4px; border-radius: 4px;
+    font-size: 0.75rem; line-height: 1; opacity: 0;
+    transition: opacity 0.12s, color 0.12s;
+  }
+  .session-item:hover .session-delete { opacity: 1; }
+  .session-delete:hover { color: #8b2e2e; }
+
+  .sidebar-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #b8a898;
+    font-size: 0.82rem;
+  }
+
+  /* ── Main chat panel ── */
+  .chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .chat-topbar {
+    padding: 0.85rem 1.25rem;
+    background: #fffdf9;
+    border-bottom: 1px solid #e8ddd0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .chat-topbar-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #5c3d2e, #3d2619);
+    display: flex; align-items: center; justify-content: center;
+    color: #faf7f0; font-size: 0.95rem;
+  }
+  .chat-topbar-title { font-weight: 600; font-size: 0.95rem; color: #1c1208; }
+  .chat-topbar-sub { font-size: 0.78rem; color: #9e7c66; }
+  .sidebar-toggle {
+    display: none;
+    background: none; border: 1px solid #e8ddd0; color: #5c4a3a;
+    border-radius: 6px; padding: 5px 8px; cursor: pointer; font-size: 0.85rem;
+    margin-left: auto;
+  }
+
+  /* ── Messages area ── */
+  .messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Welcome state */
+  .welcome-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    text-align: center;
+    gap: 1rem;
+    padding: 2rem;
+  }
+  .welcome-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: linear-gradient(135deg, #5c3d2e, #9e7c66);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.75rem; color: #faf7f0;
+  }
+  .welcome-title { font-size: 1.3rem; font-weight: 700; color: #1c1208; }
+  .welcome-sub { color: #6b5a4e; font-size: 0.9rem; max-width: 400px; line-height: 1.6; }
+  .starters { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 0.5rem; }
+  .starter-chip {
+    background: #fffdf9; border: 1.5px solid #e8ddd0; color: #5c3d2e;
+    border-radius: 20px; padding: 7px 14px; font-size: 0.82rem; font-weight: 500;
+    cursor: pointer; transition: background 0.12s, border-color 0.12s;
+  }
+  .starter-chip:hover { background: #f5f0e4; border-color: #9e7c66; }
+
+  /* Bubbles */
+  .bubble-row { display: flex; gap: 10px; align-items: flex-end; }
+  .bubble-row.user { flex-direction: row-reverse; }
+
+  .bubble-avatar {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem;
+  }
+  .bubble-avatar.ai { background: linear-gradient(135deg, #5c3d2e, #9e7c66); color: #faf7f0; }
+  .bubble-avatar.user { background: #e8ddd0; color: #5c3d2e; }
+
+  .bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 0.9rem;
+    line-height: 1.65;
+    word-break: break-word;
+  }
+
+  /* AI bubble — warm card look */
+  .bubble.ai {
+    background: #fffdf9;
+    border: 1px solid #e8ddd0;
+    border-bottom-left-radius: 5px;
+    color: #3d2619;
+    box-shadow: 0 1px 4px rgba(92,61,46,0.07);
+  }
+
+  /* User bubble — solid espresso */
+  .bubble.user {
+    background: linear-gradient(135deg, #5c3d2e, #3d2619);
+    color: #faf7f0;
+    border-bottom-right-radius: 5px;
+    box-shadow: 0 2px 8px rgba(28,18,8,0.18);
+  }
+
+  .bubble-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+  .bubble-time { font-size: 0.68rem; color: #b8a898; }
+  .bubble-row.user .bubble-meta { flex-direction: row-reverse; }
+
+  /* Typing indicator */
+  .typing-indicator { display: none; }
+  .typing-indicator.visible { display: flex; }
+  .typing-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: #9e7c66;
+    animation: typingBounce 1.2s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  /* ── Input bar ── */
+  .input-bar {
+    padding: 0.85rem 1.25rem;
+    background: #fffdf9;
+    border-top: 1px solid #e8ddd0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .input-wrap {
+    flex: 1;
+    border: 1.5px solid #e8ddd0;
+    border-radius: 12px;
+    background: #faf7f0;
+    display: flex;
+    align-items: flex-end;
+    padding: 8px 12px;
+    gap: 8px;
+    transition: border-color 0.15s;
+  }
+  .input-wrap:focus-within { border-color: #9e7c66; }
+  #msg-input {
+    flex: 1; border: none; background: transparent;
+    outline: none; resize: none; font-size: 0.9rem;
+    color: #1c1208; line-height: 1.5; max-height: 120px;
+    font-family: inherit;
+  }
+  #msg-input::placeholder { color: #b8a898; }
+  .send-btn {
+    width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+    background: #5c3d2e; border: none; color: #faf7f0;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; transition: background 0.15s;
+  }
+  .send-btn:hover { background: #3d2619; }
+  .send-btn:disabled { background: #c4a48e; cursor: not-allowed; }
+
+  /* ── Mobile ── */
+  @media (max-width: 768px) {
+    .chat-sidebar {
+      position: fixed; top: 64px; left: -100%; width: 260px;
+      height: calc(100vh - 64px); z-index: 300;
+      transition: left 0.25s ease;
+      box-shadow: 4px 0 16px rgba(28,18,8,0.12);
+    }
+    .chat-sidebar.open { left: 0; }
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0; top: 64px;
+      background: rgba(28,18,8,0.3); z-index: 299;
+    }
+    .sidebar-overlay.open { display: block; }
+    .sidebar-toggle { display: flex; align-items: center; gap: 5px; }
+    .bubble { max-width: 88%; }
+  }
+</style>
+
+<div class="chat-shell">
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- Sidebar -->
+  <div class="chat-sidebar" id="chat-sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title"><i class="fas fa-comments"></i> Chats</span>
+      <a href="{% url 'medical_chat_new' %}" class="new-chat-btn">
+        <i class="fas fa-plus"></i> New
+      </a>
+    </div>
+    <div class="session-list">
+      {% if sessions %}
+        {% for s in sessions %}
+          <a href="{% url 'medical_chat_session' s.id %}"
+             class="session-item {% if active_session.id == s.id %}active{% endif %}">
+            <span class="session-label" title="{{ s.title }}">
+              <i class="fas fa-comment-medical" style="font-size:0.75rem; margin-right:5px; color:#9e7c66;"></i>
+              {{ s.title|truncatechars:32 }}
+            </span>
+            <span class="session-date">{{ s.updated_at|date:"M d" }}</span>
+            <button class="session-delete" title="Delete"
+                    onclick="deleteSession(event, {{ s.id }})">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </a>
+        {% endfor %}
+      {% else %}
+        <div class="sidebar-empty">
+          <i class="fas fa-comment-slash" style="font-size:2rem; margin-bottom:8px; display:block;"></i>
+          No chats yet.<br>Start one below.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Main chat panel -->
+  <div class="chat-main">
+    <!-- Top bar -->
+    <div class="chat-topbar">
+      <div class="chat-topbar-icon"><i class="fas fa-heartbeat"></i></div>
+      <div>
+        <div class="chat-topbar-title">AI Health Assistant</div>
+        <div class="chat-topbar-sub">Powered by Claude &bull; Context-aware of your heart data</div>
+      </div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-history"></i> History
+      </button>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-area" id="messages-area">
+      {% if not chat_messages %}
+        <!-- Welcome state -->
+        <div class="welcome-state" id="welcome-state">
+          <div class="welcome-icon"><i class="fas fa-heartbeat"></i></div>
+          <div class="welcome-title">Hello, {{ patient.user.first_name|default:patient.user.username }}!</div>
+          <div class="welcome-sub">
+            I'm your AI health assistant. I can see your latest prediction results and ECG data.
+            Ask me anything about your heart health, what your results mean, or what to do next.
+          </div>
+          <div class="starters">
+            <button class="starter-chip" onclick="sendStarter(this)">What does my result mean?</button>
+            <button class="starter-chip" onclick="sendStarter(this)">Am I at risk of heart disease?</button>
+            <button class="starter-chip" onclick="sendStarter(this)">What lifestyle changes should I make?</button>
+            <button class="starter-chip" onclick="sendStarter(this)">Should I see a cardiologist?</button>
+          </div>
+        </div>
+      {% else %}
+        {% for msg in chat_messages %}
+          <div class="bubble-row {% if msg.role == 'user' %}user{% else %}ai{% endif %}">
+            <div class="bubble-avatar {% if msg.role == 'user' %}user{% else %}ai{% endif %}">
+              {% if msg.role == 'user' %}<i class="fas fa-user"></i>{% else %}<i class="fas fa-robot"></i>{% endif %}
+            </div>
+            <div>
+              <div class="bubble {% if msg.role == 'user' %}user{% else %}ai{% endif %}"
+                   {% if msg.role == 'ai' %}data-ai="1"{% endif %}>
+                {{ msg.content }}
+              </div>
+              <div class="bubble-meta"><span class="bubble-time">{{ msg.created_at|date:"g:i A" }}</span></div>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Typing indicator (always at bottom) -->
+      <div class="bubble-row ai typing-indicator" id="typing-indicator">
+        <div class="bubble-avatar ai"><i class="fas fa-robot"></i></div>
+        <div class="bubble ai" style="padding: 12px 16px;">
+          <div style="display:flex; gap:5px; align-items:center;">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input bar -->
+    <div class="input-bar">
+      <div class="input-wrap">
+        <textarea id="msg-input" rows="1" placeholder="Ask about your heart health..."
+                  onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      </div>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SEND_URL = "{% url 'medical_chat_send' %}";
+  const DELETE_URL_TPL = "/medical_chat_delete/SESSION_ID/";
+  const CSRF_TOKEN = "{{ csrf_token }}";
+  let activeSessionId = {% if active_session %}{{ active_session.id }}{% else %}null{% endif %};
+  let isSending = false;
+
+  const messagesArea = document.getElementById('messages-area');
+  const msgInput = document.getElementById('msg-input');
+  const sendBtn = document.getElementById('send-btn');
+  const typingIndicator = document.getElementById('typing-indicator');
+
+  function scrollToBottom() {
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+  }
+  scrollToBottom();
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function sendStarter(btn) {
+    msgInput.value = btn.textContent;
+    sendMessage();
+  }
+
+  function renderContent(role, content) {
+    return content
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\n/g,'<br>');
+  }
+
+  function appendBubble(role, content) {
+    const welcome = document.getElementById('welcome-state');
+    if (welcome) welcome.remove();
+
+    const now = new Date();
+    const time = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+    const row = document.createElement('div');
+    row.className = `bubble-row ${role}`;
+    row.innerHTML = `
+      <div class="bubble-avatar ${role}">
+        <i class="fas fa-${role === 'user' ? 'user' : 'robot'}"></i>
+      </div>
+      <div>
+        <div class="bubble ${role}">${renderContent(role, content)}</div>
+        <div class="bubble-meta"><span class="bubble-time">${time}</span></div>
+      </div>`;
+    messagesArea.insertBefore(row, typingIndicator);
+    scrollToBottom();
+  }
+
+  function showTyping() {
+    typingIndicator.classList.add('visible');
+    scrollToBottom();
+  }
+  function hideTyping() {
+    typingIndicator.classList.remove('visible');
+  }
+
+  async function sendMessage() {
+    const text = msgInput.value.trim();
+    if (!text || isSending) return;
+    isSending = true;
+    sendBtn.disabled = true;
+    msgInput.value = '';
+    msgInput.style.height = 'auto';
+
+    appendBubble('user', text);
+    showTyping();
+
+    try {
+      const resp = await fetch(SEND_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': CSRF_TOKEN,
+        },
+        body: JSON.stringify({ message: text, session_id: activeSessionId }),
+      });
+
+      const data = await resp.json();
+      hideTyping();
+
+      if (resp.ok) {
+        activeSessionId = data.session_id;
+        appendBubble('ai', data.reply);
+
+        // Update sidebar session title if it changed
+        if (data.session_title) {
+          const link = document.querySelector(`.session-item[href*="/${data.session_id}/"] .session-label`);
+          if (link) link.textContent = data.session_title.substring(0, 32) + (data.session_title.length > 32 ? '...' : '');
+        }
+      } else {
+        appendBubble('ai', 'Sorry, something went wrong. Please try again in a moment.');
+      }
+    } catch (err) {
+      hideTyping();
+      appendBubble('ai', 'Network error. Please check your connection and try again.');
+    }
+
+    isSending = false;
+    sendBtn.disabled = false;
+    msgInput.focus();
+  }
+
+  async function deleteSession(e, sessionId) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm('Delete this chat session?')) return;
+    const url = DELETE_URL_TPL.replace('SESSION_ID', sessionId);
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF_TOKEN },
+    });
+    // Redirect to chat home
+    window.location.href = "{% url 'medical_chat' %}";
+  }
+
+  // Render plain text (newlines → <br>) for server-loaded AI bubbles
+  document.querySelectorAll('.bubble.ai[data-ai]').forEach(el => {
+    const raw = el.textContent;
+    el.innerHTML = raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').trim();
+  });
+
+  // Mobile sidebar
+  function toggleSidebar() {
+    document.getElementById('chat-sidebar').classList.toggle('open');
+    document.getElementById('sidebar-overlay').classList.toggle('open');
+  }
+  function closeSidebar() {
+    document.getElementById('chat-sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('open');
+  }
+</script>
+{% endblock %}

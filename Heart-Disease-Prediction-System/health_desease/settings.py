@@ -37,11 +37,17 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
-# Google Maps API Key
-GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY', '')
+# Mapbox API Key for doctor finder map
+MAPBOX_API_KEY = os.getenv('MAPBOX_API_KEY', '')
 
-# Base URL for Twilio callbacks (use ngrok URL for local development with AI conversation)
-BASE_URL = os.getenv('BASE_URL', 'https://1ccc533a786f.ngrok-free.app')
+# Claude API (Anthropic-compatible via api.quatarly.cloud)
+CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY', 'your-api-key-1')
+
+# Sarvam AI — multilingual speech-to-text
+SARVAM_API_KEY = os.getenv('SARVAM_API_KEY', '')
+
+# Base URL for Twilio callbacks (set BASE_URL in .env to your current ngrok/production URL)
+BASE_URL = os.getenv('BASE_URL', '')
 
 
 # Application definition
@@ -96,7 +102,8 @@ WSGI_APPLICATION = 'health_desease.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # Use /tmp for App Engine (writable directory)
+        'NAME': '/tmp/db.sqlite3' if not DEBUG else BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -141,7 +148,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # WhiteNoise configuration
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Use CompressedStaticFilesStorage to avoid issues with missing source maps
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = Path.joinpath(BASE_DIR,'media')
